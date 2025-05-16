@@ -510,9 +510,177 @@ function manejarNavegacion() {
   }
 }
 
+// Funcionalidad para la subida de archivos CSV
+function initCSVUploader() {
+  const dropArea = document.getElementById('drop-area');
+  const fileInput = document.getElementById('file-input');
+  const selectBtn = document.getElementById('select-files-btn');
+  const uploadBtn = document.getElementById('upload-files-btn');
+  const fileList = document.getElementById('file-list');
+  const uploadList = document.getElementById('upload-list');
+  const uploadFeedback = document.getElementById('upload-feedback');
+  const uploadMessage = document.getElementById('upload-message');
+  
+  let files = [];
+  
+  // Prevenir el comportamiento por defecto del navegador
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, e => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, false);
+  });
+  
+  // Efectos visuales durante el drag
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => {
+      dropArea.classList.add('highlight');
+    }, false);
+  });
+  
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => {
+      dropArea.classList.remove('highlight');
+    }, false);
+  });
+  
+  // Manejar archivos soltados
+  dropArea.addEventListener('drop', e => {
+    const droppedFiles = e.dataTransfer.files;
+    handleFiles(droppedFiles);
+  }, false);
+  
+  // Manejar selección de archivos vía input
+  fileInput.addEventListener('change', e => {
+    handleFiles(e.target.files);
+  });
+  
+  // Botón para seleccionar archivos
+  selectBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+  
+  // Botón para subir archivos
+  uploadBtn.addEventListener('click', () => {
+    uploadFiles();
+  });
+  
+  // Manejar archivos seleccionados o soltados
+  function handleFiles(newFiles) {
+    // Filtrar solo archivos CSV
+    const csvFiles = Array.from(newFiles).filter(file => 
+      file.name.toLowerCase().endsWith('.csv')
+    );
+    
+    if (csvFiles.length === 0) {
+      showMessage('Por favor, selecciona archivos CSV válidos.', 'warning');
+      return;
+    }
+    
+    // Añadir a la lista de archivos
+    files = [...files, ...csvFiles];
+    updateFileList();
+  }
+  
+  // Actualizar la lista visual de archivos
+  function updateFileList() {
+    fileList.innerHTML = '';
+    
+    if (files.length > 0) {
+      uploadList.style.display = 'block';
+      
+      files.forEach((file, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+          <span>
+            <i class="fas fa-file-csv me-2 text-primary"></i>
+            ${file.name} <small class="text-muted">(${formatFileSize(file.size)})</small>
+          </span>
+          <button class="btn btn-sm btn-outline-danger" data-index="${index}">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        
+        // Botón para eliminar el archivo
+        const removeBtn = li.querySelector('button');
+        removeBtn.addEventListener('click', () => {
+          files.splice(index, 1);
+          updateFileList();
+        });
+        
+        fileList.appendChild(li);
+      });
+    } else {
+      uploadList.style.display = 'none';
+    }
+  }
+  
+  // Formatear tamaño del archivo
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
+  // Subir archivos al servidor
+  function uploadFiles() {
+    if (files.length === 0) {
+      showMessage('No hay archivos para subir.', 'warning');
+      return;
+    }
+    
+    // Mostrar estado de carga
+    showMessage('Subiendo archivos...', 'info');
+    
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    
+    fetch('/api/upload-csv', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showMessage(`${data.message} Se subieron ${files.length} archivos.`, 'success');
+        files = [];
+        updateFileList();
+      } else {
+        showMessage(`Error: ${data.message}`, 'danger');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showMessage('Error durante la subida de archivos. Inténtalo de nuevo.', 'danger');
+    });
+  }
+  
+  // Mostrar mensaje de feedback
+  function showMessage(message, type) {
+    uploadFeedback.style.display = 'block';
+    uploadMessage.className = `alert alert-${type}`;
+    uploadMessage.innerHTML = message;
+    
+    // Si es un mensaje de éxito, ocultarlo después de 5 segundos
+    if (type === 'success') {
+      setTimeout(() => {
+        uploadFeedback.style.display = 'none';
+      }, 5000);
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Inicializar modal
   resultadoModal = new bootstrap.Modal(document.getElementById('resultadoModal'));
+
+  // Inicializar el uploader de CSV
+  initCSVUploader();
   
   // Cargar datos iniciales
   cargarDashboard();

@@ -112,6 +112,36 @@
       </div>
     </div>
     
+    <!-- CSV Upload Section -->  
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-file-csv me-2"></i>Subir archivos CSV</h5>
+      </div>
+      <div class="card-body">
+        <div class="upload-container" id="csv-upload-container">
+          <div class="text-center p-4 border border-2 border-dashed rounded-3" id="drop-area">
+            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+            <h5 class="mb-2">Arrastra y suelta archivos CSV aquí</h5>
+            <p class="text-muted">O haz clic para seleccionarlos</p>
+            <input type="file" class="d-none" id="file-input" accept=".csv" multiple>
+            <button class="btn btn-primary mt-2" id="select-files-btn">
+              <i class="fas fa-file-csv me-1"></i> Seleccionar archivos CSV
+            </button>
+          </div>
+          <div id="upload-feedback" class="mt-3" style="display: none;">
+            <div class="alert" id="upload-message" role="alert"></div>
+          </div>
+          <div id="upload-list" class="mt-3" style="display: none;">
+            <h6><i class="fas fa-list me-2"></i>Archivos a subir:</h6>
+            <ul class="list-group" id="file-list"></ul>
+            <button class="btn btn-success mt-3" id="upload-files-btn">
+              <i class="fas fa-upload me-1"></i> Subir archivos
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
     <!-- Actions Section: Flujo paso a paso -->
     <div class="card mb-4">
       <div class="card-header">

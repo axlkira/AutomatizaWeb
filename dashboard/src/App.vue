@@ -115,6 +115,25 @@
                 </div>
               </div>
               
+              <!-- CSV Upload Section -->
+              <div class="mt-8">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Subir archivos CSV a _0.CSVs</h2>
+                <div 
+                  class="mt-4 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 transition"
+                  @dragover.prevent
+                  @drop.prevent="handleDrop"
+                  @click="$refs.fileInput.click()"
+                  style="min-height: 100px;"
+                >
+                  <input type="file" ref="fileInput" accept=".csv" multiple style="display:none" @change="handleFileChange">
+                  <span class="block text-lg text-gray-500 dark:text-gray-300">
+                    Arrastra y suelta aquí tus archivos CSV o haz clic para seleccionarlos
+                  </span>
+                  <span v-if="uploading" class="block mt-2 text-blue-600 dark:text-blue-300"><i class="fas fa-spinner fa-spin"></i> Subiendo...</span>
+                  <span v-if="uploadSuccess" class="block mt-2 text-green-600 dark:text-green-300"><i class="fas fa-check-circle"></i> ¡Archivos subidos correctamente!</span>
+                  <span v-if="uploadError" class="block mt-2 text-red-600 dark:text-red-300"><i class="fas fa-exclamation-triangle"></i> {{ uploadError }}</span>
+                </div>
+              </div>
               <!-- Actions Section -->
               <div class="mt-8">
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Acciones Rápidas</h2>
@@ -187,13 +206,62 @@ export default {
         pendientes: 0
       },
       articulos: [],
-      ejecutando: false
+      ejecutando: false,
+      uploading: false,
+      uploadSuccess: false,
+      uploadError: '',
     }
   },
   mounted() {
     this.cargarDatos();
   },
   methods: {
+    handleDrop(e) {
+      const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.csv'));
+      if (files.length === 0) {
+        this.uploadError = 'Solo se permiten archivos .csv';
+        this.uploadSuccess = false;
+        return;
+      }
+      this.uploadFiles(files);
+    },
+    handleFileChange(e) {
+      const files = Array.from(e.target.files).filter(f => f.name.endsWith('.csv'));
+      if (files.length === 0) {
+        this.uploadError = 'Solo se permiten archivos .csv';
+        this.uploadSuccess = false;
+        return;
+      }
+      this.uploadFiles(files);
+    },
+    uploadFiles(files) {
+      this.uploading = true;
+      this.uploadSuccess = false;
+      this.uploadError = '';
+      const formData = new FormData();
+      files.forEach(f => formData.append('csv_files', f));
+      axios.post('/api/upload-csv', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+        .then(res => {
+          if (res.data.success) {
+            this.uploadSuccess = true;
+            this.uploadError = '';
+            setTimeout(() => { this.uploadSuccess = false; }, 2000);
+          } else {
+            this.uploadError = res.data.error || 'Error al subir archivos';
+            this.uploadSuccess = false;
+          }
+        })
+        .catch(err => {
+          this.uploadError = err.response?.data?.error || 'Error al subir archivos';
+          this.uploadSuccess = false;
+        })
+        .finally(() => {
+          this.uploading = false;
+          if (this.$refs.fileInput) this.$refs.fileInput.value = '';
+        });
+    },
     async cargarDatos() {
       try {
         const statsResponse = await axios.get('http://localhost:5000/api/stats');

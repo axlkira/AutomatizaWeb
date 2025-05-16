@@ -116,6 +116,27 @@ body.dark-mode .btn-close {
   margin: 1rem 0;
 }
 
+/* Estilos para el área de drag & drop */
+#drop-area {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+#drop-area.highlight {
+  background-color: #f8f9fa;
+  border-color: #0d6efd !important;
+  box-shadow: 0 0 10px rgba(13, 110, 253, 0.25);
+}
+
+.dark-mode #drop-area.highlight {
+  background-color: #2b3035;
+  border-color: #0d6efd !important;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
 /* Estilos para la visualización de artículos */
 .article-container {
   font-family: 'Georgia', serif;

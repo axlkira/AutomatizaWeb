@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, send_from_directory, render_template
+from werkzeug.utils import secure_filename
 import pandas as pd
 import os
 import sys
@@ -302,6 +303,31 @@ def update_ai_config():
 @app.route('/<path:path>')
 def static_files(path):
     return send_from_directory(app.static_folder, path)
+
+# Endpoint para subir archivos CSV a la carpeta _0.CSVs
+@app.route('/api/upload-csv', methods=['POST'])
+def upload_csv():
+    try:
+        # Verifica que haya archivos en la petición
+        if 'files' not in request.files:
+            return jsonify({'success': False, 'error': 'No se encontraron archivos en la petición (campo files)'}), 400
+        files = request.files.getlist('files')
+        if not files:
+            return jsonify({'success': False, 'error': 'No se enviaron archivos'}), 400
+        # Carpeta destino
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+        dest_dir = os.path.join(base_dir, '_0.CSVs')
+        os.makedirs(dest_dir, exist_ok=True)
+        saved_files = []
+        for file in files:
+            filename = secure_filename(file.filename)
+            if not filename.lower().endswith('.csv'):
+                return jsonify({'success': False, 'error': f'El archivo {filename} no es un CSV'}), 400
+            file.save(os.path.join(dest_dir, filename))
+            saved_files.append(filename)
+        return jsonify({'success': True, 'files': saved_files, 'message': 'Archivos subidos correctamente'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
