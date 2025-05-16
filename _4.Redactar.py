@@ -112,14 +112,19 @@ def procesar_fila(fila):
     keywords_linea = ', '.join(f"{k}" for k in keywords.split('\n'))
     resumen = crear_resumen(fila['Titulo'].strip(), fila['Articulo'].strip())
     titulo = crear_titulo(resumen, keywords_linea)
+    articulo = crear_articulo(resumen, keywords_linea, titulo)
+    descripcion = crear_descripcion(resumen, titulo)
+    categoria = crear_categoria(titulo)
+    slug = crear_slug(keywords)
+    
+    # Devolver los campos en el orden correcto para el CSV
     return [
         keywords,
-        resumen,
-        titulo,
-        crear_articulo(resumen, keywords_linea, titulo),
-        crear_descripcion(resumen, titulo),
-        crear_categoria(titulo),
-        crear_slug(keywords)
+        titulo,           # Título corto y descriptivo
+        articulo,         # Artículo completo (HTML)
+        descripcion,      # Descripción breve
+        categoria,        # Categoría del artículo
+        slug              # URL amigable
     ]
 
 # Lectura de datos existentes, filtrado de filas a procesar y ejecución concurrente con escritura en CSV
