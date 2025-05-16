@@ -24,7 +24,7 @@
     "grok": {
       "base_url": "https://api.x.ai/v1",
       "model": "grok-3-mini-fast-latest",
-      "api_key": "xai-sWVoihBhdFfMXM1gCKtZ9HnCrxhxoBPCKBEo7Ybg5uU7I7PCNiWNPriJZPt2ot5PL11eLuoJ1MiduBnM"
+      "api_key": ""
     },
     "custom": {
       "base_url": "",
