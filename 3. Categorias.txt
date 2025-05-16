@@ -1,7 +1,7 @@
-Enciclopedia
-Redes neuronales
-Procesamiento de lenguaje natural
 Tecnología
-Ciencia
-Información
-Inteligencia artificial
+Ciencias
+Ingeniería
+Informática
+Medicina
+Medio Ambiente
+Computación

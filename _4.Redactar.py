@@ -150,5 +150,3 @@ with open("4. Redactados.csv", "a", newline="", encoding="utf-8") as archivo_csv
                     print(f"Error procesando fila: {e}")
                 finally:
                     pbar.update(1)
-
-
