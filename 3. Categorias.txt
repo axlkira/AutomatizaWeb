@@ -1,7 +1,7 @@
-Enciclopedias
-Bibliografía
-Aprendizaje Automático
-Redes Neuronales
-Procesamiento Lenguaje
-Inteligencia Artificial
-Lenguaje Natural
+Enciclopedia
+Redes neuronales
+Procesamiento de lenguaje natural
+Tecnología
+Ciencia
+Información
+Inteligencia artificial

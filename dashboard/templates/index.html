@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutomatizaWeb Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-robot me-2"></i>
+        AutomatizaWeb
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="/" id="nav-dashboard"><i class="fas fa-tachometer-alt me-1"></i> Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#articulos" id="nav-articulos"><i class="fas fa-file-alt me-1"></i> Artículos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#scraping" id="nav-scraping"><i class="fas fa-spider me-1"></i> Scraping</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#configuracion" id="nav-config"><i class="fas fa-cog me-1"></i> Configuración</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Botón para modo oscuro -->
+  <button id="dark-mode-toggle" class="dark-mode-toggle" title="Cambiar modo oscuro/claro">
+    <i id="dark-mode-icon" class="fas fa-moon"></i>
+  </button>
+
+  <div class="container mt-4">
+    <h1 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row stats-container mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h6 class="card-subtitle mb-2">Artículos Generados</h6>
+                <h2 class="card-title" id="articulos-generados">0</h2>
+              </div>
+              <div>
+                <i class="fas fa-newspaper fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h6 class="card-subtitle mb-2">URLs Procesadas</h6>
+                <h2 class="card-title" id="urls-procesadas">0</h2>
+              </div>
+              <div>
+                <i class="fas fa-link fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h6 class="card-subtitle mb-2">Categorías</h6>
+                <h2 class="card-title" id="categorias">0</h2>
+              </div>
+              <div>
+                <i class="fas fa-tags fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3 mb-3">
+        <div class="card bg-danger text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h6 class="card-subtitle mb-2">Pendientes</h6>
+                <h2 class="card-title" id="pendientes">0</h2>
+              </div>
+              <div>
+                <i class="fas fa-tasks fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Actions Section: Flujo paso a paso -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-list-ol me-2"></i>Flujo de Procesamiento (Paso a Paso)</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i> Los pasos deben ejecutarse en secuencia. Cada paso requiere que los anteriores hayan sido completados.
+        </div>
+        <div class="list-group">
+          <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Paso 1: Fusionar</h6>
+              <p class="mb-1 text-muted small">Fusiona datos de diferentes fuentes</p>
+            </div>
+            <button class="btn btn-primary" id="btn-fusionar">
+              <i class="fas fa-code-merge me-1"></i> Fusionar
+            </button>
+          </div>
+          <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Paso 2: Agrupar</h6>
+              <p class="mb-1 text-muted small">Agrupa la información por criterios específicos</p>
+            </div>
+            <button class="btn btn-primary" id="btn-agrupar">
+              <i class="fas fa-object-group me-1"></i> Agrupar
+            </button>
+          </div>
+          <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Paso 3: Escrapear</h6>
+              <p class="mb-1 text-muted small">Extrae información de las URLs</p>
+            </div>
+            <button class="btn btn-primary" id="btn-scraping">
+              <i class="fas fa-spider me-1"></i> Escrapear
+            </button>
+          </div>
+          <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Paso 4: Categorizar</h6>
+              <p class="mb-1 text-muted small">Asigna categorías al contenido obtenido</p>
+            </div>
+            <button class="btn btn-primary" id="btn-categorizar">
+              <i class="fas fa-tags me-1"></i> Categorizar
+            </button>
+          </div>
+          <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Paso 5: Redactar</h6>
+              <p class="mb-1 text-muted small">Genera los artículos finales</p>
+              <div class="progress mt-2" style="height: 10px; display: none;" id="redactar-progress-container">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" id="redactar-progress-bar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <p class="mb-0 mt-1 small text-success" id="redactar-progress-text" style="display: none;"></p>
+            </div>
+            <div>
+              <button class="btn btn-primary" id="btn-redactar">
+                <i class="fas fa-file-alt me-1"></i> Redactar
+              </button>
+              <a href="/api/descargar-redactados" class="btn btn-success ms-2" id="btn-descargar-redactados">
+                <i class="fas fa-download me-1"></i> Descargar CSV
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="text-center mt-3">
+          <button class="btn btn-success" id="btn-ejecutar-todo">
+            <i class="fas fa-play-circle me-1"></i> Ejecutar Todos los Pasos en Secuencia
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Articles -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5><i class="fas fa-newspaper me-2"></i>Artículos Recientes</h5>
+        <a href="/api/descargar-redactados" class="btn btn-sm btn-outline-success">
+          <i class="fas fa-download me-1"></i> Descargar Todos
+        </a>
+      </div>
+      <div class="card-body">
+        <div id="loading-articulos" class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p>Cargando artículos...</p>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped" id="tabla-articulos">
+            <thead>
+              <tr>
+                <th>Keyword</th>
+                <th>Título</th>
+                <th>Categoría</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="articulos-body">
+              <!-- Aquí se cargarán los artículos dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+        <div class="text-center mt-3" id="no-articulos" style="display: none;">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i> No hay artículos disponibles. Ejecuta el proceso de Redactar para generar artículos.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para mostrar resultados de ejecución -->
+  <div class="modal fade" id="resultadoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Resultado de ejecución</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <pre id="resultado-contenido" class="bg-light p-3 rounded"></pre>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/dashboard.js"></script>
+  
+  <!-- Script para corregir problemas de funcionalidad -->
+  <script>
+    // Script para garantizar que los botones funcionen correctamente
+    document.addEventListener('DOMContentLoaded', function() {
+      // Configurar botones de navegación
+      document.querySelectorAll('#navbarNav .nav-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          // Quitar la clase active de todos los links
+          document.querySelectorAll('#navbarNav .nav-link').forEach(function(l) {
+            l.classList.remove('active');
+          });
+          
+          // Añadir la clase active al link clickeado
+          this.classList.add('active');
+        });
+      });
+      
+      // Configurar botones de acción rápida
+      document.getElementById('btn-ejecutar-todo').addEventListener('click', function() {
+        console.log('Click en Ejecutar Todo');
+        ejecutarScript('_0.Fusionar.py');
+      });
+      
+      document.getElementById('btn-scraping').addEventListener('click', function() {
+        console.log('Click en Scraping');
+        ejecutarScript('_2.Escrapear.py');
+      });
+      
+      document.getElementById('btn-redactar').addEventListener('click', function() {
+        console.log('Click en Redactar');
+        ejecutarScript('_4.Redactar.py');
+      });
+      
+      console.log('Eventos de botones configurados correctamente');
+    });
+  </script>
+</body>
+</html>
