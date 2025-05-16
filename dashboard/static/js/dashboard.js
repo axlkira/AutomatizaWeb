@@ -93,9 +93,84 @@ async function cargarDashboard() {
 }
 
 // Función para ver detalles de un artículo
-function verArticulo(id) {
-  alert('Funcionalidad de visualización de artículo en desarrollo');
-  console.log('Ver artículo con ID:', id);
+async function verArticulo(id) {
+  try {
+    // Mostrar indicador de carga
+    const articuloModal = new bootstrap.Modal(document.getElementById('articuloModal'));
+    document.getElementById('articulo-cuerpo').innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">Cargando artículo...</p></div>';
+    document.getElementById('articulo-titulo').innerText = 'Cargando...';
+    articuloModal.show();
+    
+    // Obtener datos del artículo
+    const response = await fetch(`/api/articulo/${id}`);
+    if (!response.ok) throw new Error('Error al cargar el artículo');
+    const articulo = await response.json();
+    
+    // Actualizar modal con datos del artículo
+    document.getElementById('articulo-titulo').innerText = articulo.titulo;
+    
+    // Crear contenido estructurado del artículo
+    let contenidoHTML = `
+      <div class="article-container">
+        <div class="article-meta mb-4">
+          <div class="badge bg-primary me-2">${articulo.categoria}</div>
+          <small class="text-muted">Keyword: ${articulo.keyword}</small>
+        </div>
+        
+        <div class="article-description mb-4">
+          <p class="lead">${articulo.descripcion}</p>
+        </div>
+        
+        <div class="article-content">
+          ${articulo.articulo}
+        </div>
+        
+        <div class="article-footer mt-4 pt-3 border-top">
+          <div class="row">
+            <div class="col-md-6">
+              <small class="text-muted">URL amigable: ${articulo.slug}</small>
+            </div>
+            <div class="col-md-6 text-end">
+              <a href="#" class="btn btn-sm btn-outline-primary" onclick="copiarAlPortapapeles('${encodeURIComponent(articulo.articulo)}'); return false;">
+                <i class="fas fa-copy me-1"></i> Copiar HTML
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('articulo-cuerpo').innerHTML = contenidoHTML;
+  } catch (error) {
+    console.error('Error al cargar artículo:', error);
+    document.getElementById('articulo-cuerpo').innerHTML = `
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Error al cargar el artículo: ${error.message}
+      </div>
+    `;
+  }
+}
+
+// Función para copiar el contenido HTML al portapapeles
+function copiarAlPortapapeles(texto) {
+  const textoDecode = decodeURIComponent(texto);
+  navigator.clipboard.writeText(textoDecode)
+    .then(() => {
+      // Mostrar notificación de éxito
+      const alertaDiv = document.createElement('div');
+      alertaDiv.className = 'alert alert-success position-fixed bottom-0 end-0 m-3';
+      alertaDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i> HTML copiado al portapapeles';
+      document.body.appendChild(alertaDiv);
+      
+      // Eliminar la notificación después de 3 segundos
+      setTimeout(() => {
+        alertaDiv.remove();
+      }, 3000);
+    })
+    .catch(err => {
+      console.error('Error al copiar:', err);
+    });
 }
 
 // Variable para el intervalo de progreso

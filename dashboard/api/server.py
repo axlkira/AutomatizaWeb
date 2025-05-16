@@ -163,17 +163,53 @@ def descargar_redactados():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Ruta para obtener el progreso del script Redactar (simulado por ahora)
+# Ruta para obtener el progreso del script Redactar
 @app.route('/api/progreso/<script>')
 def get_progreso(script):
-    # En una implementación real, esto podría leer un archivo de estado o una base de datos
     if script == "_4.Redactar.py":
-        # Simular progreso aleatorio entre 0-100% para pruebas
-        # En una implementación real, leerías el progreso real del script
-        import random
-        progreso = random.randint(0, 100) if random.random() > 0.8 else 100
-        return jsonify({"progreso": progreso})
+        try:
+            # Leer el progreso desde el archivo temporal
+            progreso_file = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')), 'progreso_redactar.txt')
+            if os.path.exists(progreso_file):
+                with open(progreso_file, 'r') as f:
+                    progreso = int(f.read().strip())
+                return jsonify({"progreso": progreso})
+            else:
+                return jsonify({"progreso": 0})
+        except Exception as e:
+            print(f"Error al leer progreso: {e}")
+            return jsonify({"progreso": 0})
     return jsonify({"progreso": 0})
+
+# Ruta para obtener un artículo completo por su ID
+@app.route('/api/articulo/<id>')
+def get_articulo(id):
+    try:
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+        articulos_path = os.path.join(base_dir, "4. Redactados.csv")
+        
+        if os.path.exists(articulos_path):
+            df = pd.read_csv(articulos_path)
+            # Convertir ID a índice numérico
+            try:
+                indice = int(id)
+                if 0 <= indice < len(df):
+                    articulo = {
+                        'keyword': df.iloc[indice].get('Keywords', ''),
+                        'titulo': df.iloc[indice].get('Titulo', ''),
+                        'articulo': df.iloc[indice].get('Articulo', ''),
+                        'descripcion': df.iloc[indice].get('Descripcion', ''),
+                        'categoria': df.iloc[indice].get('Categorias', '') or df.iloc[indice].get('Categoria', ''),
+                        'slug': df.iloc[indice].get('SLUG', '') or df.iloc[indice].get('Slug', ''),
+                    }
+                    return jsonify(articulo)
+            except Exception as e:
+                print(f"Error al procesar índice: {e}")
+        
+        return jsonify({"error": "Artículo no encontrado"}), 404
+    except Exception as e:
+        print(f"Error al buscar artículo: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # Ruta principal para servir la aplicación
 @app.route('/')

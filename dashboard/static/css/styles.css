@@ -115,3 +115,99 @@ body.dark-mode .btn-close {
   height: 3rem;
   margin: 1rem 0;
 }
+
+/* Estilos para la visualización de artículos */
+.article-container {
+  font-family: 'Georgia', serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+body.dark-mode .article-container {
+  color: #f8f9fa;
+}
+
+.article-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.article-description p.lead {
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1.7;
+  color: #495057;
+  font-style: italic;
+  border-left: 3px solid #007bff;
+  padding-left: 1rem;
+}
+
+body.dark-mode .article-description p.lead {
+  color: #adb5bd;
+}
+
+.article-content {
+  font-size: 1.1rem;
+}
+
+.article-content h2 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #343a40;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+
+body.dark-mode .article-content h2 {
+  color: #e9ecef;
+  border-bottom-color: #495057;
+}
+
+.article-content p {
+  margin-bottom: 1.2rem;
+}
+
+.article-content ul, .article-content ol {
+  margin-bottom: 1.2rem;
+  padding-left: 2rem;
+}
+
+.article-content li {
+  margin-bottom: 0.5rem;
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+  margin: 1rem 0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.article-footer {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+body.dark-mode .article-footer {
+  color: #adb5bd;
+}
+
+/* Animación para el modal de artículo */
+#articuloModal .modal-content {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
