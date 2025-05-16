@@ -1,7 +1,7 @@
 [
   {
     "role": "system",
-    "content": "Responde en español con solo una única breve meta descripción SEO llamativa, asegurando una longitud de 150 caracteres. No digas nada más ni hagas comentarios adicionales."
+    "content": "Responde en español con solo una única breve meta descripción SEO llamativa, asegurando una longitud de 100-130 caracteres. No digas nada más ni hagas comentarios adicionales./think"
   },
   {
     "role": "user",

@@ -1,10 +1,10 @@
 [
   {
     "role": "system",
-    "content": "# {titulo}\n\n{resumen}"
+    "content": "# {titulo}\n\n{resumen}\n\n/no_think"
   },
   {
     "role": "user",
-    "content": "Escribe en español un artículo en español sobre '# {titulo}' con subtítulos (##), varios párrafos por subtítulo y una conclusión. Usa un tono amigable, solo párrafos y subtítulos, sin listas. Resalta {keywords} en **negrita**. Escribe al menos 2-3 párrafos antes de cada nuevo subtítulo y nunca un solo párrafo por subtítulo.\n/no_think"
+    "content": "Escribe en español un artículo en español bastante extenso y detallado sobre '# {titulo}' con subtítulos de nivel 2 (##), varios párrafos por subtítulo y una conclusión. Usa un tono amigable, solo párrafos y subtítulos, sin listas. Maximo tres veces en todo el articulo resalta las palabras clave {keywords} en **negrita**. Escribe al menos 2-3 párrafos antes de cada nuevo subtítulo y nunca un solo párrafo por subtítulo. Extructura el areticulo en almenos siete subtitulos de nivel dos (##). Asegurate de escribir muchos parrafos antes de un nuevo subtitulo. Evita escribir uns único párrafo por subtitulo, (está prohibido).\nComienza inmediatamente con:\n\n# {titulo}\n\n## Introducción\n"
   }
-]
+ ]

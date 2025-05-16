@@ -1,5 +1,5 @@
 {
-  "provider": "deepseek",
+  "provider": "ollama",
   "models": {
     "ollama": {
       "base_url": "http://localhost:11434/v1",
@@ -22,9 +22,9 @@
       "api_key": ""
     },
     "grok": {
-      "base_url": "https://api.grok.x/v1",
-      "model": "grok-1",
-      "api_key": ""
+      "base_url": "https://api.x.ai/v1",
+      "model": "grok-3-mini-fast-latest",
+      "api_key": "xai-sWVoihBhdFfMXM1gCKtZ9HnCrxhxoBPCKBEo7Ybg5uU7I7PCNiWNPriJZPt2ot5PL11eLuoJ1MiduBnM"
     },
     "custom": {
       "base_url": "",
