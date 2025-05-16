@@ -6,6 +6,7 @@
   <title>AutomatizaWeb Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
@@ -163,6 +164,15 @@
           </div>
           <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
             <div>
+              <h6 class="mb-1">Paso 1.1: Descanivalizar</h6>
+              <p class="mb-1 text-muted small">Elimina keywords canivalizadas, conservando solo posiciones 1-4</p>
+            </div>
+            <button class="btn btn-primary" id="btn-descanivalizar">
+              <i class="fas fa-filter me-1"></i> Descanivalizar
+            </button>
+          </div>
+          <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
               <h6 class="mb-1">Paso 2: Agrupar</h6>
               <p class="mb-1 text-muted small">Agrupa la información por criterios específicos</p>
             </div>
@@ -231,7 +241,7 @@
           <p>Cargando artículos...</p>
         </div>
         <div class="table-responsive">
-          <table class="table table-striped" id="tabla-articulos">
+          <table class="table table-striped table-bordered" id="tabla-articulos" width="100%">
             <thead>
               <tr>
                 <th>Keyword</th>
@@ -302,6 +312,13 @@
       </div>
     </div>
   </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+  <script src="/js/dashboard.js"></script>
   
   <!-- Modal para mostrar artículos -->
   <div class="modal fade" id="articuloModal" tabindex="-1" aria-hidden="true">

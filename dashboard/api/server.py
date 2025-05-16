@@ -87,7 +87,7 @@ def get_articulos():
         if os.path.exists(articulos_path):
             df = pd.read_csv(articulos_path)
             # Ordenar por las filas más recientes (asumiendo que las últimas filas son las más recientes)
-            df = df.tail(10)  # Mostrar más artículos
+            # No limitamos la cantidad de artículos para que se muestren todos en DataTables
             
             for _, row in df.iterrows():
                 # Asegurarse de que todas las columnas existan o usar valores por defecto
@@ -113,7 +113,7 @@ def ejecutar_script():
     script = data.get('script')
     
     # Validar solo los scripts existentes
-    if script not in ['_0.Fusionar.py', '_1.Agrupar.py', '_2.Escrapear.py', '_3.Categorizar.py', '_4.Redactar.py']:
+    if script not in ['_0.Fusionar.py', '_01.Descanivalizador.py', '_1.Agrupar.py', '_2.Escrapear.py', '_3.Categorizar.py', '_4.Redactar.py']:
         return jsonify({'error': 'Script no permitido'}), 400
     
     try:

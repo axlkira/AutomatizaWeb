@@ -110,16 +110,21 @@ def main():
             # Ordenar por posición (ascendente, donde 1 es la mejor posición)
             entries.sort(key=lambda x: x[0])
             
-            # Agregar solo la mejor entrada (la primera después de ordenar)
-            mejor_entrada = entries[0][1]
-            filas_filtradas.append(mejor_entrada)
-            
-            # Loguear y almacenar las entradas eliminadas si hay duplicados
-            if len(entries) > 1:
-                logging.info(f"Keyword: '{keyword}' - Se mantiene posición {entries[0][0]} - URL: {entries[0][1][2]}")
-                for pos, row in entries[1:]:
+            # Agregar solo las entradas de posición 1 a 4
+            entradas_a_mantener = []
+            for pos, row in entries:
+                if 1 <= pos <= 4:
+                    entradas_a_mantener.append((pos, row))
+                    filas_filtradas.append(row)
+                    logging.info(f"Keyword: '{keyword}' - Se mantiene posición {pos} - URL: {row[2]}")
+                else:
                     logging.info(f"    Eliminada: posición {pos} - URL: {row[2]}")
                     filas_eliminadas.append(row)
+            
+            # Loguear información si hay duplicados
+            if len(entries) > len(entradas_a_mantener):
+                logging.info(f"Keyword: '{keyword}' - Se mantienen {len(entradas_a_mantener)} de {len(entries)} entradas (solo posiciones 1-4)")
+
         
         # Escribir resultados a un archivo temporal
         with open(archivo_temporal, 'w', newline='', encoding='utf-8') as f:

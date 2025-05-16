@@ -1,7 +1,9 @@
 // Variables globales
 let resultadoModal;
 let isLoading = false;
-let dataTable;
+let totalArticulos = [];    // Para almacenar todos los artículos
+let currentPage = 1;        // Página actual
+let articlesPerPage = 5;    // Artículos por página - Limitado a 5
 
 // Función para cambiar entre modo claro y oscuro
 function toggleDarkMode() {
@@ -37,7 +39,7 @@ async function cargarDashboard() {
     // Cargar artículos recientes
     const articulosResponse = await fetch('/api/articulos');
     if (!articulosResponse.ok) throw new Error('Error al cargar artículos');
-    const articulos = await articulosResponse.json();
+    totalArticulos = await articulosResponse.json();
     
     // Ocultar spinner de carga
     document.getElementById('loading-articulos').style.display = 'none';
@@ -45,57 +47,24 @@ async function cargarDashboard() {
     // Mostrar tabla si hay artículos
     const tablaArticulos = document.getElementById('tabla-articulos');
     const noArticulos = document.getElementById('no-articulos');
+    const paginacion = document.getElementById('articulos-paginacion');
     
-    if (articulos.length === 0) {
+    if (totalArticulos.length === 0) {
       // Mostrar mensaje si no hay artículos
       tablaArticulos.style.display = 'none';
       noArticulos.style.display = 'block';
+      paginacion.style.display = 'none';
     } else {
       // Mostrar tabla y ocultar mensaje
       tablaArticulos.style.display = 'table';
       noArticulos.style.display = 'none';
       
-      // Destruir DataTable si ya existe
-      if (dataTable) {
-        dataTable.destroy();
-      }
+      // Mostrar artículos con paginación
+      mostrarArticulosPaginados(currentPage);
       
-      // Limpiar tabla anterior
-      const articulosBody = document.getElementById('articulos-body');
-      articulosBody.innerHTML = '';
-      
-      // Rellenar tabla con artículos
-      articulos.forEach(articulo => {
-        const fila = document.createElement('tr');
-        fila.innerHTML = `
-          <td>${articulo.keyword || 'Sin palabra clave'}</td>
-          <td>${articulo.titulo || 'Sin título'}</td>
-          <td>${articulo.categoria || 'Sin categoría'}</td>
-          <td>
-            <a href="/api/descargar-redactados" class="btn btn-sm btn-success me-1" title="Descargar">
-              <i class="fas fa-download"></i>
-            </a>
-            <button class="btn btn-sm btn-primary me-1" title="Ver" onclick="verArticulo('${articulo.id}')">
-              <i class="fas fa-eye"></i>
-            </button>
-          </td>
-        `;
-        articulosBody.appendChild(fila);
-      });
-      
-      // Inicializar DataTable con opciones
-      dataTable = new DataTable('#tabla-articulos', {
-        pageLength: 5,
-        lengthMenu: [5, 10, 25, 50],
-        language: {
-          url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
-        },
-        responsive: true,
-        dom: 'Bfrtip',
-        buttons: [
-          'copy', 'excel', 'pdf'
-        ]
-      });
+      // Actualizar controles de paginación
+      actualizarPaginacion();
+      paginacion.style.display = 'flex';
     }
     
     // Actualizar visibilidad del botón de descarga según si hay artículos
@@ -109,7 +78,97 @@ async function cargarDashboard() {
     document.getElementById('loading-articulos').style.display = 'none';
     document.getElementById('no-articulos').style.display = 'block';
     document.getElementById('tabla-articulos').style.display = 'none';
+    document.getElementById('articulos-paginacion').style.display = 'none';
   }
+}
+
+// Función para mostrar artículos paginados
+function mostrarArticulosPaginados(page) {
+  const articulosBody = document.getElementById('articulos-body');
+  
+  // Limpiar tabla anterior
+  articulosBody.innerHTML = '';
+  
+  // Calcular índices de la página actual
+  const startIndex = (page - 1) * articlesPerPage;
+  const endIndex = Math.min(startIndex + articlesPerPage, totalArticulos.length);
+  
+  // Obtener artículos para la página actual
+  const articulosPagina = totalArticulos.slice(startIndex, endIndex);
+  
+  // Agregar artículos a la tabla
+  articulosPagina.forEach(articulo => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${articulo.keyword || 'Sin palabra clave'}</td>
+      <td>${articulo.titulo || 'Sin título'}</td>
+      <td>${articulo.categoria || 'Sin categoría'}</td>
+      <td>
+        <a href="/api/descargar-redactados" class="btn btn-sm btn-success me-1" title="Descargar">
+          <i class="fas fa-download"></i>
+        </a>
+        <button class="btn btn-sm btn-primary me-1" title="Ver" onclick="verArticulo('${articulo.id}')">
+          <i class="fas fa-eye"></i>
+        </button>
+      </td>
+    `;
+    articulosBody.appendChild(fila);
+  });
+}
+
+// Función para actualizar controles de paginación
+function actualizarPaginacion() {
+  const paginacion = document.getElementById('articulos-paginacion');
+  const ul = paginacion.querySelector('ul.pagination');
+  
+  // Limpiar paginación anterior
+  ul.innerHTML = '';
+  
+  // Calcular total de páginas
+  const totalPages = Math.ceil(totalArticulos.length / articlesPerPage);
+  
+  // Botón "Anterior"
+  const prevLi = document.createElement('li');
+  prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+  prevLi.innerHTML = `<a class="page-link" href="#" tabindex="-1">Anterior</a>`;
+  prevLi.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentPage > 1) {
+      cambiarPagina(currentPage - 1);
+    }
+  });
+  ul.appendChild(prevLi);
+  
+  // Botones de páginas numeradas
+  for (let i = 1; i <= totalPages; i++) {
+    const pageLi = document.createElement('li');
+    pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+    pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+    pageLi.addEventListener('click', (e) => {
+      e.preventDefault();
+      cambiarPagina(i);
+    });
+    ul.appendChild(pageLi);
+  }
+  
+  // Botón "Siguiente"
+  const nextLi = document.createElement('li');
+  nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+  nextLi.innerHTML = `<a class="page-link" href="#">Siguiente</a>`;
+  nextLi.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      cambiarPagina(currentPage + 1);
+    }
+  });
+  ul.appendChild(nextLi);
+}
+
+// Función para cambiar de página
+function cambiarPagina(page) {
+  currentPage = page;
+  mostrarArticulosPaginados(page);
+  actualizarPaginacion();
 }
 
 // Función para ver detalles de un artículo
@@ -302,206 +361,6 @@ async function ejecutarScript(script) {
     }
   } finally {
     isLoading = false;
-  }
-}
-
-// Funcionalidad para la subida de archivos CSV
-function initCSVUploader() {
-  const dropArea = document.getElementById('drop-area');
-  const fileInput = document.getElementById('file-input');
-  const selectBtn = document.getElementById('select-files-btn');
-  const uploadBtn = document.getElementById('upload-files-btn');
-  const fileList = document.getElementById('file-list');
-  const uploadList = document.getElementById('upload-list');
-  const uploadFeedback = document.getElementById('upload-feedback');
-  const uploadMessage = document.getElementById('upload-message');
-  
-  let files = [];
-  
-  // Prevenir comportamiento por defecto para eventos de arrastrar y soltar
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, e => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, false);
-  });
-  
-  // Resaltar área de soltar al arrastrar
-  ['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, () => {
-      dropArea.classList.add('highlight');
-    }, false);
-  });
-  
-  ['dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, () => {
-      dropArea.classList.remove('highlight');
-    }, false);
-  });
-  
-  // Manejar archivos soltados
-  dropArea.addEventListener('drop', e => {
-    const droppedFiles = e.dataTransfer.files;
-    handleFiles(droppedFiles);
-  });
-  
-  // Manejar selección de archivos
-  fileInput.addEventListener('change', () => {
-    handleFiles(fileInput.files);
-  });
-  
-  // Botón para seleccionar archivos
-  selectBtn.addEventListener('click', () => {
-    fileInput.click();
-  });
-  
-  // Botón para subir archivos
-  uploadBtn.addEventListener('click', () => {
-    uploadFiles();
-  });
-  
-  // Manejar archivos seleccionados o soltados
-  function handleFiles(newFiles) {
-    // Filtrar solo archivos CSV
-    const csvFiles = Array.from(newFiles).filter(file => 
-      file.name.toLowerCase().endsWith('.csv')
-    );
-    
-    if (csvFiles.length === 0) {
-      showMessage('Por favor, selecciona archivos CSV válidos.', 'warning');
-      return;
-    }
-    
-    // Añadir a la lista de archivos
-    files = [...files, ...csvFiles];
-    updateFileList();
-  }
-  
-  // Actualizar la lista visual de archivos
-  function updateFileList() {
-    fileList.innerHTML = '';
-    
-    if (files.length > 0) {
-      uploadList.style.display = 'block';
-      
-      files.forEach((file, index) => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.innerHTML = `
-          <span>
-            <i class="fas fa-file-csv me-2 text-primary"></i>
-            ${file.name} <small class="text-muted">(${formatFileSize(file.size)})</small>
-          </span>
-          <button class="btn btn-sm btn-outline-danger" data-index="${index}">
-            <i class="fas fa-times"></i>
-          </button>
-        `;
-        
-        // Botón para eliminar el archivo
-        const removeBtn = li.querySelector('button');
-        removeBtn.addEventListener('click', () => {
-          files.splice(index, 1);
-          updateFileList();
-        });
-        
-        fileList.appendChild(li);
-      });
-    } else {
-      uploadList.style.display = 'none';
-    }
-  }
-  
-  // Formatear tamaño del archivo
-  function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-  
-  // Subir archivos al servidor
-  function uploadFiles() {
-    if (files.length === 0) {
-      showMessage('No hay archivos para subir.', 'warning');
-      return;
-    }
-    
-    // Mostrar estado de carga
-    showMessage('Subiendo archivos...', 'info');
-    
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file);
-    });
-    
-    fetch('/api/upload-csv', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showMessage(`${data.message} Se subieron ${files.length} archivos.`, 'success');
-        files = [];
-        updateFileList();
-      } else {
-        showMessage(`Error: ${data.message}`, 'danger');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      showMessage('Error durante la subida de archivos. Inténtalo de nuevo.', 'danger');
-    });
-  }
-  
-  // Mostrar mensaje de feedback
-  function showMessage(message, type) {
-    uploadFeedback.style.display = 'block';
-    uploadMessage.className = `alert alert-${type}`;
-    uploadMessage.innerHTML = message;
-    
-    // Si es un mensaje de éxito, ocultarlo después de 5 segundos
-    if (type === 'success') {
-      setTimeout(() => {
-        uploadFeedback.style.display = 'none';
-      }, 5000);
-    }
-  }
-}
-
-// Función para manejar la navegación
-function manejarNavegacion() {
-  const hash = window.location.hash || '#dashboard';
-  const sections = {
-    '#dashboard': 'dashboard-section',
-    '#articulos': 'articulos-section',
-    '#scraping': 'scraping-section',
-    '#configuracion': 'configuracion-section'
-  };
-  
-  // Ocultar todas las secciones
-  Object.values(sections).forEach(id => {
-    const section = document.getElementById(id);
-    if (section) section.style.display = 'none';
-  });
-  
-  // Mostrar la sección correspondiente
-  const sectionId = sections[hash] || sections['#dashboard'];
-  const section = document.getElementById(sectionId);
-  if (section) section.style.display = 'block';
-  
-  // Actualizar la navegación
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.getAttribute('href') === hash) {
-      link.classList.add('active');
-    }
-  });
-  
-  // Si es la sección de configuración, cargar los datos
-  if (hash === '#configuracion') {
-    cargarConfiguracionIA();
   }
 }
 
