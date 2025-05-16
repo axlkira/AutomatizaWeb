@@ -14,7 +14,7 @@
     "deepseek": {
       "base_url": "https://api.deepseek.com/v1",
       "model": "deepseek-chat",
-      "api_key": "sk-e75e3638e0ba4a4f965bdfb03cbe16dd"
+      "api_key": ""
     },
     "openrouter": {
       "base_url": "https://openrouter.ai/api/v1",
