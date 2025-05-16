@@ -286,12 +286,240 @@ async function ejecutarScript(script) {
 }
 
 // Inicialización cuando el DOM esté listo
+// Función para cargar la configuración de IA
+async function cargarConfiguracionIA() {
+  try {
+    document.getElementById('loading-config').style.display = 'block';
+    document.getElementById('config-error').style.display = 'none';
+    document.getElementById('config-content').style.display = 'none';
+    
+    const response = await fetch('/api/config/ai');
+    if (!response.ok) throw new Error('Error al cargar la configuración');
+    const config = await response.json();
+    
+    // Establecer el proveedor seleccionado
+    document.getElementById('provider-select').value = config.provider;
+    
+    // Mostrar la configuración del proveedor seleccionado
+    mostrarConfiguracionProveedor(config.provider, config.models[config.provider]);
+    
+    document.getElementById('loading-config').style.display = 'none';
+    document.getElementById('config-content').style.display = 'block';
+  } catch (error) {
+    console.error('Error al cargar configuración:', error);
+    document.getElementById('loading-config').style.display = 'none';
+    document.getElementById('config-error').style.display = 'block';
+    document.getElementById('config-error-message').textContent = error.message;
+  }
+}
+
+// Función para mostrar la configuración específica del proveedor seleccionado
+function mostrarConfiguracionProveedor(provider, config) {
+  const configContainer = document.getElementById('provider-config');
+  
+  // Limpiar contenedor
+  configContainer.innerHTML = '';
+  
+  // Crear campos de configuración según el proveedor
+  const fieldConfigs = {
+    'base_url': {
+      label: 'URL Base',
+      type: 'text',
+      placeholder: 'Ejemplo: http://localhost:11434/v1'
+    },
+    'model': {
+      label: 'Modelo',
+      type: 'text',
+      placeholder: 'Ejemplo: qwen3:8b'
+    },
+    'api_key': {
+      label: 'API Key',
+      type: 'password',
+      placeholder: 'Introduce tu API key'
+    }
+  };
+  
+  // Crear campos para el proveedor actual
+  for (const [key, fieldConfig] of Object.entries(fieldConfigs)) {
+    const formGroup = document.createElement('div');
+    formGroup.className = 'mb-3';
+    
+    const label = document.createElement('label');
+    label.className = 'form-label';
+    label.setAttribute('for', `config-${provider}-${key}`);
+    label.textContent = fieldConfig.label;
+    
+    const input = document.createElement('input');
+    input.type = fieldConfig.type;
+    input.className = 'form-control';
+    input.id = `config-${provider}-${key}`;
+    input.name = key;
+    input.placeholder = fieldConfig.placeholder;
+    input.value = config[key] || '';
+    
+    // Ayuda contextual según el proveedor
+    let helpText = '';
+    if (key === 'base_url') {
+      if (provider === 'ollama') {
+        helpText = 'URL del servidor Ollama, por defecto: http://localhost:11434/v1';
+      } else if (provider === 'openai') {
+        helpText = 'URL de la API de OpenAI, por defecto: https://api.openai.com/v1';
+      } else if (provider === 'deepseek') {
+        helpText = 'URL de la API de DeepSeek, por defecto: https://api.deepseek.com/v1';
+      }
+    } else if (key === 'model') {
+      if (provider === 'ollama') {
+        helpText = 'Modelo de Ollama, ejemplos: qwen3:8b, llama3, etc.';
+      } else if (provider === 'openai') {
+        helpText = 'Modelo de OpenAI, ejemplos: gpt-3.5-turbo, gpt-4, etc.';
+      } else if (provider === 'deepseek') {
+        helpText = 'Modelo de DeepSeek, ejemplos: deepseek-chat, etc.';
+      }
+    } else if (key === 'api_key') {
+      if (provider === 'ollama') {
+        helpText = 'Normalmente no se requiere para Ollama local.';
+      } else {
+        helpText = `Introduce tu API key para ${provider.charAt(0).toUpperCase() + provider.slice(1)}.`;
+      }
+    }
+    
+    // Agregar texto de ayuda si existe
+    if (helpText) {
+      const helpElement = document.createElement('div');
+      helpElement.className = 'form-text';
+      helpElement.textContent = helpText;
+      formGroup.appendChild(label);
+      formGroup.appendChild(input);
+      formGroup.appendChild(helpElement);
+    } else {
+      formGroup.appendChild(label);
+      formGroup.appendChild(input);
+    }
+    
+    configContainer.appendChild(formGroup);
+  }
+  
+  // Añadir botón de guardar
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'btn btn-primary mt-3';
+  saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Configuración';
+  saveBtn.onclick = guardarConfiguracionIA;
+  configContainer.appendChild(saveBtn);
+}
+
+// Función para guardar la configuración de IA
+async function guardarConfiguracionIA() {
+  try {
+    const provider = document.getElementById('provider-select').value;
+    const config = {
+      provider: provider,
+      config: {
+        base_url: document.getElementById(`config-${provider}-base_url`).value,
+        model: document.getElementById(`config-${provider}-model`).value,
+        api_key: document.getElementById(`config-${provider}-api_key`).value
+      }
+    };
+    
+    // Mostrar indicador de carga
+    const saveBtn = document.querySelector('#provider-config button');
+    const originalButtonText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+    
+    // Enviar configuración al servidor
+    const response = await fetch('/api/config/ai', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(config)
+    });
+    
+    const data = await response.json();
+    
+    // Restaurar botón
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = originalButtonText;
+    
+    if (response.ok) {
+      // Mostrar notificación de éxito
+      const alertaDiv = document.createElement('div');
+      alertaDiv.className = 'alert alert-success position-fixed bottom-0 end-0 m-3';
+      alertaDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i> Configuración guardada correctamente';
+      document.body.appendChild(alertaDiv);
+      
+      // Eliminar la notificación después de 3 segundos
+      setTimeout(() => {
+        alertaDiv.remove();
+      }, 3000);
+      
+      // Recargar configuración
+      cargarConfiguracionIA();
+    } else {
+      throw new Error(data.error || 'Error al guardar la configuración');
+    }
+  } catch (error) {
+    console.error('Error al guardar configuración:', error);
+    
+    // Mostrar notificación de error
+    const alertaDiv = document.createElement('div');
+    alertaDiv.className = 'alert alert-danger position-fixed bottom-0 end-0 m-3';
+    alertaDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> Error: ${error.message}`;
+    document.body.appendChild(alertaDiv);
+    
+    // Eliminar la notificación después de 5 segundos
+    setTimeout(() => {
+      alertaDiv.remove();
+    }, 5000);
+  }
+}
+
+// Función para manejar la navegación
+function manejarNavegacion() {
+  // Obtener la ubicación actual
+  const hash = window.location.hash || '#dashboard';
+  
+  // Ocultar todas las secciones
+  document.querySelectorAll('.card').forEach(section => {
+    section.style.display = 'none';
+  });
+  
+  // Quitar clase activa de todos los enlaces
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.remove('active');
+  });
+  
+  // Mostrar la sección correspondiente y activar enlace
+  if (hash === '#configuracion') {
+    // Mostrar sección de configuración
+    document.getElementById('configuracion-section').style.display = 'block';
+    document.getElementById('nav-config').classList.add('active');
+    // Cargar configuración de IA
+    cargarConfiguracionIA();
+  } else if (hash === '#articulos') {
+    // Mostrar solo la sección de artículos
+    document.querySelector('.card:nth-of-type(2)').style.display = 'block';
+    document.getElementById('nav-articulos').classList.add('active');
+  } else {
+    // Dashboard: mostrar todas las secciones excepto configuración
+    document.querySelectorAll('.card:not(#configuracion-section)').forEach(section => {
+      section.style.display = 'block';
+    });
+    document.getElementById('nav-dashboard').classList.add('active');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Inicializar modal
   resultadoModal = new bootstrap.Modal(document.getElementById('resultadoModal'));
   
   // Cargar datos iniciales
   cargarDashboard();
+  
+  // Configurar manejo de navegación
+  window.addEventListener('hashchange', manejarNavegacion);
+  manejarNavegacion(); // Manejar navegación inicial
   
   // Inicializar modo oscuro si estaba activado
   if (localStorage.getItem('darkMode') === 'enabled') {
@@ -308,6 +536,37 @@ document.addEventListener('DOMContentLoaded', () => {
   if (darkModeButton) {
     darkModeButton.addEventListener('click', toggleDarkMode);
   }
+  
+  // Manejar cambios en el selector de proveedor de IA
+  const providerSelect = document.getElementById('provider-select');
+  if (providerSelect) {
+    providerSelect.addEventListener('change', function() {
+      // Obtener la configuración actual y mostrar los campos del proveedor seleccionado
+      fetch('/api/config/ai')
+        .then(response => response.json())
+        .then(config => {
+          mostrarConfiguracionProveedor(providerSelect.value, config.models[providerSelect.value]);
+        })
+        .catch(error => {
+          console.error('Error al cambiar proveedor:', error);
+        });
+    });
+  }
+  
+  // Configurar navegación
+  const navLinks = document.querySelectorAll('.nav-link');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      // Si es el enlace de configuración, cargar la configuración de IA
+      if (this.id === 'nav-config') {
+        setTimeout(() => {
+          if (document.getElementById('configuracion-section').style.display === 'block') {
+            cargarConfiguracionIA();
+          }
+        }, 100);
+      }
+    });
+  });
   
   // Configurar botones para cada paso del proceso
   // Paso 1: Fusionar

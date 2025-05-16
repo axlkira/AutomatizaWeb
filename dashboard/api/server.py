@@ -226,6 +226,79 @@ def articulos():
 def scraping():
     return send_from_directory(app.template_folder, 'index.html')
 
+# Ruta para la sección de configuración
+@app.route('/configuracion')
+def configuracion():
+    return send_from_directory(app.template_folder, 'index.html')
+
+# Ruta para obtener la configuración de IA
+@app.route('/api/config/ai', methods=['GET'])
+def get_ai_config():
+    try:
+        config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config/ai_config.json'))
+        if os.path.exists(config_path):
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            # Por seguridad, no devolver API keys en la respuesta
+            safe_config = config.copy()
+            for provider, settings in safe_config['models'].items():
+                if 'api_key' in settings and settings['api_key']:
+                    settings['api_key'] = '********'
+            return jsonify(safe_config)
+        else:
+            return jsonify({"error": "Archivo de configuración no encontrado"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Ruta para actualizar la configuración de IA
+@app.route('/api/config/ai', methods=['POST'])
+def update_ai_config():
+    try:
+        config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config/ai_config.json'))
+        current_config = {}
+        
+        # Leer configuración actual si existe
+        if os.path.exists(config_path):
+            with open(config_path, 'r', encoding='utf-8') as f:
+                current_config = json.load(f)
+        
+        # Obtener datos enviados
+        data = request.json
+        
+        # Validar datos mínimos requeridos
+        if 'provider' not in data:
+            return jsonify({"error": "Falta el proveedor"}), 400
+            
+        # Si se envía un nuevo API key, actualizar, sino mantener el actual
+        if data['provider'] in current_config['models']:
+            provider_config = data.get('config', {})
+            
+            # Solo actualizar API key si se proporciona uno nuevo y no está vacío
+            if 'api_key' in provider_config and provider_config['api_key'] != '********' and provider_config['api_key'].strip():
+                current_config['models'][data['provider']]['api_key'] = provider_config['api_key']
+                
+            # Actualizar URL base si se proporciona
+            if 'base_url' in provider_config and provider_config['base_url'].strip():
+                current_config['models'][data['provider']]['base_url'] = provider_config['base_url']
+                
+            # Actualizar modelo si se proporciona
+            if 'model' in provider_config and provider_config['model'].strip():
+                current_config['models'][data['provider']]['model'] = provider_config['model']
+        
+        # Actualizar proveedor activo
+        current_config['provider'] = data['provider']
+        
+        # Guardar configuración actualizada
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(current_config, f, indent=2)
+            
+        return jsonify({"success": True, "message": "Configuración actualizada correctamente"})
+    except Exception as e:
+        import traceback
+        error_detallado = traceback.format_exc()
+        print(f"Error al actualizar configuración: {error_detallado}")
+        return jsonify({"error": str(e), "traceback": error_detallado}), 500
+
 @app.route('/<path:path>')
 def static_files(path):
     return send_from_directory(app.static_folder, path)

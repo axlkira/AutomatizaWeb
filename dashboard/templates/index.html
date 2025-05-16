@@ -222,6 +222,55 @@
         </div>
       </div>
     </div>
+    
+    <!-- Configuración de IA -->
+    <div class="card mt-4" id="configuracion-section" style="display: none;">
+      <div class="card-header">
+        <h5><i class="fas fa-cog me-2"></i>Configuración de Modelos de IA</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info mb-4">
+          <i class="fas fa-info-circle me-2"></i> Configure los modelos de IA utilizados para la generación de contenido. Puede elegir entre Ollama (local), OpenAI, DeepSeek u otros proveedores personalizados.
+        </div>
+        
+        <!-- Indicador de carga -->
+        <div id="loading-config" class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando configuración...</span>
+          </div>
+          <p>Cargando configuración...</p>
+        </div>
+        
+        <!-- Error de carga -->
+        <div id="config-error" class="alert alert-danger" style="display: none;">
+          <i class="fas fa-exclamation-triangle me-2"></i> 
+          Error al cargar la configuración: <span id="config-error-message"></span>
+        </div>
+        
+        <!-- Contenido de configuración -->
+        <div id="config-content" style="display: none;">
+          <div class="mb-4">
+            <label for="provider-select" class="form-label">Proveedor de IA</label>
+            <select class="form-select" id="provider-select">
+              <option value="ollama">Ollama (Local)</option>
+              <option value="openai">OpenAI</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="grok">Grok</option>
+              <option value="custom">Personalizado</option>
+            </select>
+            <div class="form-text">Seleccione el proveedor de IA que desea utilizar para la generación de contenido.</div>
+          </div>
+          
+          <hr class="my-4">
+          
+          <h6><i class="fas fa-sliders-h me-2"></i>Configuración del Proveedor</h6>
+          <div id="provider-config" class="mt-3">
+            <!-- Aquí se cargan los campos dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   
   <!-- Modal para mostrar artículos -->

@@ -1,7 +1,7 @@
 Tecnología
-Ciencias
-Ingeniería
+Ciencia
 Informática
-Medicina
-Medio Ambiente
-Computación
+Matemáticas
+Ingeniería
+Biología
+Física
