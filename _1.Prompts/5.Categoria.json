@@ -1,0 +1,10 @@
+[
+  {
+    "role": "system",
+    "content": "Responde en español con solo una única categoría de la lista proporcionada. No digas nada más ni hagas comentarios adicionales."
+  },
+  {
+    "role": "user",
+    "content": "Categorías disponibles: {categorias}.\n¿En qué categoría se debería colocar el artículo '{titulo}'? /no_think"
+  }
+]

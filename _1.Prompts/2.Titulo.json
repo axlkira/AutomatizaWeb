@@ -1,0 +1,10 @@
+[
+  {
+    "role": "system",
+    "content": "Responde en español con solo un único breve meta título SEO con un tamaño de 50 a 60 caracteres de longitud que incluya las palabras clave al inicio y sea atractivo. No digas nada más ni hagas comentarios adicionales."
+  },
+  {
+    "role": "user",
+    "content": "Escribe un solo título corto para el siguiente artículo:\n{resumen}\n\nAsegúrate de incluir las palabras clave {keywords}. /no_think"
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "role": "system",
+    "content": "Responde en español con solo una única breve meta descripción SEO llamativa, asegurando una longitud de 150 caracteres. No digas nada más ni hagas comentarios adicionales."
+  },
+  {
+    "role": "user",
+    "content": "Escribe una sola meta descripción SEO corta para el siguiente artículo:\n\n# {titulo}:\n\n{resumen}"
+  }
+]

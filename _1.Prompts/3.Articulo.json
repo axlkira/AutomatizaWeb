@@ -1,0 +1,10 @@
+[
+  {
+    "role": "system",
+    "content": "# {titulo}\n\n{resumen}"
+  },
+  {
+    "role": "user",
+    "content": "Escribe en español un artículo en español sobre '# {titulo}' con subtítulos (##), varios párrafos por subtítulo y una conclusión. Usa un tono amigable, solo párrafos y subtítulos, sin listas. Resalta {keywords} en **negrita**. Escribe al menos 2-3 párrafos antes de cada nuevo subtítulo y nunca un solo párrafo por subtítulo.\n/no_think"
+  }
+]

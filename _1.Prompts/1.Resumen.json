@@ -1,0 +1,10 @@
+[
+  {
+    "role": "system",
+    "content": "# {titulo}:\n\n{articulo}"
+  },
+  {
+    "role": "user",
+    "content": "Responde en español con solo un único párrafo muy extenso y detallado que resuma el artículo. No digas nada más ni hagas comentarios adicionales. Redacta un único párrafo que sintetice el contenido del artículo: '{titulo}'."
+  }
+]

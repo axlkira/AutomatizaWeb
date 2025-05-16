@@ -1,0 +1,10 @@
+[
+  {
+    "role": "system",
+    "content": "A continuación tienes una lista de títulos de artículos científicos y técnicos extraídos de un sitio web:\n\n{titulos}"
+  },
+  {
+    "role": "user",
+    "content": "Analiza los títulos proporcionados y responde en español con una única lista breve de siete líneas. Cada línea debe comenzar con un guion medio seguido de un espacio '- ' y debe contener una sola palabra. No digas nada más ni hagas comentarios adicionales. Escribe una lista de 7 categorías temáticas relevantes para agrupar estos títulos técnicos. /think"
+  }
+]
