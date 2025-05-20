@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración de APIs | AutomatizaWeb</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body { background: #f8f9fa; }
+    .api-section-title { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; display: flex; align-items: center; }
+    .api-card { border-radius: 1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.07); transition: all 0.3s ease; }
+    .api-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,123,255,0.15); }
+    .api-card .card-header { background: linear-gradient(90deg, #007bff 0%, #00c6ff 100%); color: #fff; border-radius: 1rem 1rem 0 0; }
+    .api-card .form-label { font-weight: 600; color: #0a66c2; }
+    .api-icon { font-size: 2.2rem; margin-right: 0.8rem; vertical-align: middle; }
+    .save-btn { font-size: 1.2rem; padding: 0.7rem 2.5rem; border-radius: 2rem; box-shadow: 0 4px 10px rgba(0,123,255,0.3); transition: all 0.3s ease; }
+    .save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,123,255,0.4); }
+    .divider { border-top: 2px solid #e0e0e0; margin: 2.5rem 0; }
+    .form-select, .form-control { border-radius: 0.5rem; padding: 0.7rem 1rem; border: 1px solid #dee2e6; transition: all 0.3s; }
+    .form-select:focus, .form-control:focus { border-color: #80bdff; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15); }
+    .provider-select { font-weight: 500; }
+    .main-title { color: #0a66c2; margin-bottom: 2rem; font-weight: 700; }
+    .field-group { background-color: #fff; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    /* Animaciones suaves */
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-robot me-2"></i>
+        AutomatizaWeb
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/" id="nav-dashboard"><i class="fas fa-tachometer-alt me-1"></i> Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/configuracion" id="nav-config"><i class="fas fa-cogs me-1"></i> Configuración</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#documentacion" id="nav-docs"><i class="fas fa-book me-1"></i> Documentación y Créditos</a>
+          </li>
+        </ul>
+      </div>
+  </nav>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <h1 class="mb-4 text-center main-title"><i class="fas fa-sliders-h me-2"></i>Configuración de APIs</h1>
+        <!-- Sección de APIs de Texto -->
+<div class="field-group fade-in">
+  <div class="api-section-title"><i class="fas fa-font api-icon text-primary"></i>API de Texto</div>
+  <div class="mb-3 row align-items-center">
+    <div class="col-md-4">
+      <label for="select-text-provider" class="form-label mb-0"><b>Proveedor activo de texto:</b></label>
+    </div>
+    <div class="col-md-8">
+      <select id="select-text-provider" class="form-select provider-select" onchange="renderTextApis()">
+        <option value="ollama">Ollama (Local)</option>
+        <option value="openai">OpenAI</option>
+        <option value="deepseek">DeepSeek</option>
+        <option value="openrouter">OpenRouter</option>
+        <option value="grok">Grok</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+  </div>
+<div class="mb-3 row align-items-center fade-in" id="text-model-row">
+    <div class="col-md-4">
+      <label for="select-text-model" class="form-label mb-0">Modelo:</label>
+    </div>
+    <div class="col-md-8">
+      <select id="select-text-model" class="form-select"></select>
+      <small class="text-muted" id="model-description"></small>
+    </div>
+  </div>
+  <div class="mb-3 row align-items-center fade-in" id="text-api-key-row">
+    <div class="col-md-4">
+      <label for="text-api-key" class="form-label mb-0">API Key:</label>
+    </div>
+    <div class="col-md-8">
+      <div class="input-group">
+        <input type="password" class="form-control" id="text-api-key" placeholder="Introduce tu API Key" autocomplete="off">
+        <button class="btn btn-outline-secondary" type="button" id="toggle-password" onclick="togglePasswordVisibility('text-api-key')"><i class="fas fa-eye"></i></button>
+      </div>
+      <small class="text-muted">Tu API key se guarda de forma segura en el servidor.</small>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+        <!-- Sección de APIs de Imagen -->
+<div class="field-group fade-in">
+  <div class="api-section-title"><i class="fas fa-image api-icon text-success"></i>API de Imagen</div>
+  <div class="mb-3 row align-items-center">
+    <div class="col-md-4">
+      <label for="select-image-provider" class="form-label mb-0"><b>Proveedor activo de imagen:</b></label>
+    </div>
+    <div class="col-md-8">
+      <select id="select-image-provider" class="form-select provider-select">
+        <option value="fooocus">Fooocus (Local)</option>
+        <option value="deepinfra">DeepInfra</option>
+        <option value="stability">Stability AI</option>
+        <option value="other">Otro...</option>
+      </select>
+    </div>
+  </div>
+  <div class="mb-3 row align-items-center" id="image-api-key-row">
+    <div class="col-md-4">
+      <label for="image-api-key" class="form-label mb-0">API Key:</label>
+    </div>
+    <div class="col-md-8">
+      <div class="input-group">
+        <input type="password" class="form-control" id="image-api-key" placeholder="Introduce tu API Key" autocomplete="off">
+        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('image-api-key')"><i class="fas fa-eye"></i></button>
+      </div>
+      <small class="text-muted">No se requiere para proveedores locales como Fooocus.</small>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+<!-- Sección de APIs de Video -->
+<div class="field-group fade-in">
+  <div class="api-section-title"><i class="fas fa-video api-icon text-danger"></i>API de Video</div>
+  <div class="mb-3 row align-items-center">
+    <div class="col-md-4">
+      <label for="select-video-provider" class="form-label mb-0"><b>Proveedor activo de video:</b></label>
+    </div>
+    <div class="col-md-8">
+      <select id="select-video-provider" class="form-select provider-select">
+        <option value="runway">RunwayML</option>
+        <option value="pika">Pika</option>
+        <option value="genmo">Genmo</option>
+        <option value="other">Otro...</option>
+      </select>
+    </div>
+  </div>
+  <div class="mb-3 row align-items-center">
+    <div class="col-md-4">
+      <label for="video-api-key" class="form-label mb-0">API Key:</label>
+    </div>
+    <div class="col-md-8">
+      <div class="input-group">
+        <input type="password" class="form-control" id="video-api-key" placeholder="Introduce tu API Key" autocomplete="off">
+        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('video-api-key')"><i class="fas fa-eye"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+        <div class="text-center mt-5">
+          <button type="button" class="btn btn-primary save-btn" onclick="guardarConfig()"><i class="fas fa-save me-2"></i>Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Configuración y datos
+let configData = null;
+
+// Modelos predefinidos para cada proveedor
+const MODELOS_PREDEFINIDOS = {
+  'ollama': ['qwen3:8b', 'llama3:8b', 'mistral:7b', 'phi3:14b'],
+  'openai': ['gpt-3.5-turbo', 'gpt-4', 'gpt-4o'],
+  'deepseek': ['deepseek-chat', 'deepseek-coder'],
+  'openrouter': ['anthropic/claude-3-opus', 'mistralai/mixtral-8x7b', 'google/gemini-pro'],
+  'grok': ['grok-3-mini-fast-latest', 'grok-1.5'],
+  'custom': ['custom-model-1', 'custom-model-2']
+};
+
+// Datos de los proveedores
+const PROVEEDORES = {
+  'ollama': {
+    base_url: 'http://localhost:11434/v1',
+    requiresKey: false
+  },
+  'openai': {
+    base_url: 'https://api.openai.com/v1',
+    requiresKey: true
+  },
+  'deepseek': {
+    base_url: 'https://api.deepseek.com/v1',
+    requiresKey: true
+  },
+  'openrouter': {
+    base_url: 'https://openrouter.ai/api/v1',
+    requiresKey: true
+  },
+  'grok': {
+    base_url: 'https://api.x.ai/v1',
+    requiresKey: true
+  },
+  'custom': {
+    base_url: '',
+    requiresKey: true
+  }
+};
+
+/**
+ * Carga la configuración inicial desde el backend
+ */
+async function cargarConfig() {
+  try {
+    const res = await fetch('/api/config');
+    configData = await res.json();
+    
+    // Establece el proveedor seleccionado
+    const proveedorSelect = document.getElementById('select-text-provider');
+    if (configData.provider) {
+      proveedorSelect.value = configData.provider;
+    }
+    
+    // Carga los valores iniciales para imagen y video
+    document.getElementById('image-api-key').value = configData.image_api_key || '';
+    document.getElementById('video-api-key').value = configData.video_api_key || '';
+    
+    // Actualiza la UI basada en los valores cargados
+    actualizarUIProveedor();
+  } catch (error) {
+    console.error('Error al cargar la configuración:', error);
+  }
+}
+
+/**
+ * Actualiza la UI basada en el proveedor seleccionado
+ */
+async function actualizarUIProveedor() {
+  const proveedor = document.getElementById('select-text-provider').value;
+  const apiKeyRow = document.getElementById('text-api-key-row');
+  const modelRow = document.getElementById('text-model-row');
+  const modelSelect = document.getElementById('select-text-model');
+  const apiKeyInput = document.getElementById('text-api-key');
+  
+  // Restablecer estado
+  modelSelect.innerHTML = '<option value="">Cargando modelos...</option>';
+  modelSelect.disabled = true;
+  
+  // Mostrar/ocultar campo API Key según el proveedor
+  if (PROVEEDORES[proveedor] && !PROVEEDORES[proveedor].requiresKey) {
+    apiKeyRow.style.display = 'none';
+  } else {
+    apiKeyRow.style.display = '';
+    // Solo establecer el valor de la API Key si el campo está vacío o al inicio
+    if (apiKeyInput.value.trim() === '' && configData && configData.models && configData.models[proveedor]) {
+      apiKeyInput.value = configData.models[proveedor].api_key || '';
+    }
+    // IMPORTANTE: Preservamos el valor que el usuario ingresó
+  }
+  
+  // Siempre mostrar la fila de modelos
+  modelRow.style.display = '';
+  
+  // Obtener modelos dinámicamente si hay API key
+  let modelos = [];
+  
+  try {
+    // Para Ollama, usar el endpoint sin API key
+    if (proveedor === 'ollama') {
+      try {
+        const response = await fetch('/api/ollama/models');
+        const data = await response.json();
+        if (data.modelos && Array.isArray(data.modelos)) {
+          modelos = data.modelos;
+        }
+      } catch (error) {
+        console.error('Error al obtener modelos de Ollama:', error);
+        modelos = MODELOS_PREDEFINIDOS['ollama'] || [];
+      }
+    } 
+    // Para los demás proveedores, verificar si hay API key
+    else if (apiKeyInput.value.trim() && PROVEEDORES[proveedor]) {
+      // Intentar obtener modelos basados en API key
+      try {
+        // Mostrar cargando
+        const smallElement = document.querySelector('#model-description');
+        if (smallElement) {
+          smallElement.textContent = 'Obteniendo modelos disponibles...';
+        }
+        
+        const endpoint = `/api/${proveedor}/models`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_key: apiKeyInput.value })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.modelos && Array.isArray(data.modelos)) {
+            modelos = data.modelos;
+            if (smallElement) {
+              smallElement.textContent = `${modelos.length} modelos encontrados`;
+              setTimeout(() => {
+                smallElement.textContent = '';
+              }, 3000);
+            }
+          }
+        } else {
+          const data = await response.json();
+          if (smallElement) {
+            smallElement.textContent = data.error || 'Error al obtener modelos';
+          }
+          modelos = MODELOS_PREDEFINIDOS[proveedor] || [];
+        }
+      } catch (error) {
+        console.error(`Error al obtener modelos de ${proveedor}:`, error);
+        modelos = MODELOS_PREDEFINIDOS[proveedor] || [];
+      }
+    } else {
+      // Sin API key, usar modelos predefinidos
+      modelos = MODELOS_PREDEFINIDOS[proveedor] || [];
+    }
+  } catch (err) {
+    console.error('Error general:', err);
+    modelos = MODELOS_PREDEFINIDOS[proveedor] || [];
+  }
+  
+  // Cargar los modelos en el select
+  modelSelect.innerHTML = '';
+  modelSelect.disabled = false;
+  
+  if (modelos.length > 0) {
+    // Llenar el selector con los modelos
+    modelos.forEach(modelo => {
+      const option = document.createElement('option');
+      option.value = modelo;
+      option.textContent = modelo;
+      
+      // Seleccionar el modelo guardado si existe
+      if (configData && configData.models && configData.models[proveedor] && 
+          configData.models[proveedor].model === modelo) {
+        option.selected = true;
+      }
+      
+      modelSelect.appendChild(option);
+    });
+  } else {
+    modelSelect.innerHTML = '<option value="">No hay modelos disponibles</option>';
+  }
+}
+
+/**
+ * Guarda la configuración en el backend
+ */
+async function guardarConfig() {
+  // Recopilar datos actuales
+  const proveedor = document.getElementById('select-text-provider').value;
+  const modelo = document.getElementById('select-text-model').value;
+  const apiKey = document.getElementById('text-api-key').value;
+  
+  // Crear objeto de configuración
+  const nuevaConfig = { 
+    provider: proveedor,
+    models: {}
+  };
+  
+  // Mantener configuraciones existentes de otros proveedores
+  if (configData && configData.models) {
+    nuevaConfig.models = {...configData.models};
+  }
+  
+  // Actualizar configuración del proveedor seleccionado
+  nuevaConfig.models[proveedor] = {
+    model: modelo,
+    api_key: apiKey,
+    base_url: PROVEEDORES[proveedor]?.base_url || ''
+  };
+  
+  // Agregar configuraciones para imagen y video
+  nuevaConfig.image_api_key = document.getElementById('image-api-key').value || '';
+  nuevaConfig.video_api_key = document.getElementById('video-api-key').value || '';
+  
+  try {
+    // Enviar al backend
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nuevaConfig)
+    });
+    
+    if (res.ok) {
+      alert('Configuración guardada correctamente');
+      configData = nuevaConfig;
+    } else {
+      alert('Error al guardar la configuración');
+    }
+  } catch (error) {
+    alert('Error: ' + error.message);
+  }
+}
+
+/**
+ * Alterna la visibilidad de la contraseña
+ */
+function togglePasswordVisibility(inputId) {
+  const input = document.getElementById(inputId);
+  const button = input.nextElementSibling;
+  if (input.type === 'password') {
+    input.type = 'text';
+    button.innerHTML = '<i class="fas fa-eye-slash"></i>';
+  } else {
+    input.type = 'password';
+    button.innerHTML = '<i class="fas fa-eye"></i>';
+  }
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+  // Cargar la configuración inicial
+  cargarConfig();
+  
+  // Escuchar cambios en el selector de proveedor de texto
+  document.getElementById('select-text-provider').addEventListener('change', actualizarUIProveedor);
+  
+  // Botón para cargar modelos basados en API key
+  const apiKeyContainer = document.querySelector('#text-api-key-row .col-md-8 .input-group');
+  const loadModelsButton = document.createElement('button');
+  loadModelsButton.type = 'button';
+  loadModelsButton.className = 'btn btn-outline-success';
+  loadModelsButton.innerHTML = 'Cargar Modelos';
+  loadModelsButton.onclick = function() {
+    const apiKey = document.getElementById('text-api-key').value.trim();
+    if (apiKey) {
+      actualizarUIProveedor();
+    }
+  };
+  apiKeyContainer.appendChild(loadModelsButton);
+  
+  // También permitir actualizar presionando Enter en el campo API key
+  document.getElementById('text-api-key').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && this.value.trim()) {
+      actualizarUIProveedor();
+    }
+  });
+  
+  // Manejar visibilidad del campo API Key para Fooocus (imagen)
+  document.getElementById('select-image-provider').addEventListener('change', function() {
+    const apiKeyRow = document.getElementById('image-api-key-row');
+    if (this.value === 'fooocus') {
+      apiKeyRow.style.opacity = '0.5';
+      document.getElementById('image-api-key').disabled = true;
+    } else {
+      apiKeyRow.style.opacity = '1';
+      document.getElementById('image-api-key').disabled = false;
+    }
+  });
+  
+  // Configurar el estado inicial de Fooocus
+  if (document.getElementById('select-image-provider').value === 'fooocus') {
+    document.getElementById('image-api-key-row').style.opacity = '0.5';
+    document.getElementById('image-api-key').disabled = true;
+  }
+  
+  // Añadir botón para refrescar modelos directamente
+  const modelRow = document.getElementById('text-model-row');
+  const refreshButton = document.createElement('button');
+  refreshButton.type = 'button';
+  refreshButton.className = 'btn btn-sm btn-outline-primary ms-2';
+  refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+  refreshButton.title = 'Actualizar lista de modelos';
+  refreshButton.onclick = actualizarUIProveedor;
+  modelRow.querySelector('.col-md-4').appendChild(refreshButton);
+});
+</script>
+</body>
+</html>

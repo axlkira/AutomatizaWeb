@@ -1,0 +1,106 @@
+<!-- Modal de Configuración de APIs -->
+<div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="configModalLabel">Configuración de APIs</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="configForm">
+          <div class="mb-3">
+            <label for="activeGenerator" class="form-label">Generador de imágenes activo</label>
+            <select class="form-select" id="activeGenerator" name="activeGenerator"></select>
+          </div>
+          <div id="apiKeysFields"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" onclick="guardarConfig()">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function cargarConfig() {
+  const res = await fetch('/api/config');
+  const config = await res.json();
+  // Llenar selector de generadores
+  const select = document.getElementById('activeGenerator');
+  select.innerHTML = '';
+  for (const key in config.image_generators) {
+    if (key !== "default") {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+      if (config.active_image_generator === key) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+  // Llenar campos de API keys
+  const apiKeysDiv = document.getElementById('apiKeysFields');
+  apiKeysDiv.innerHTML = '';
+  if (config.image_generators) {
+    for (const [gen, data] of Object.entries(config.image_generators)) {
+      if (data.api_key !== undefined) {
+        apiKeysDiv.innerHTML += `
+          <div class="mb-3">
+            <label class="form-label">${gen} API Key</label>
+            <input type="text" class="form-control" id="key_${gen}" value="${data.api_key || ''}">
+          </div>
+        `;
+      }
+    }
+  }
+  if (config.other_apis) {
+    for (const [api, data] of Object.entries(config.other_apis)) {
+      apiKeysDiv.innerHTML += `
+        <div class="mb-3">
+          <label class="form-label">${api} API Key</label>
+          <input type="text" class="form-control" id="key_${api}" value="${data.api_key || ''}">
+        </div>
+      `;
+    }
+  }
+}
+var configModal = document.getElementById('configModal');
+if (configModal) {
+  configModal.addEventListener('show.bs.modal', function() {
+    cargarConfig();
+  });
+}
+
+async function guardarConfig() {
+  const res = await fetch('/api/config');
+  const config = await res.json();
+  // Actualizar generador activo
+  config.active_image_generator = document.getElementById('activeGenerator').value;
+  // Actualizar API keys
+  if (config.image_generators) {
+    for (const gen in config.image_generators) {
+      const keyInput = document.getElementById('key_' + gen);
+      if (keyInput) {
+        config.image_generators[gen].api_key = keyInput.value;
+      }
+    }
+  }
+  if (config.other_apis) {
+    for (const api in config.other_apis) {
+      const keyInput = document.getElementById('key_' + api);
+      if (keyInput) {
+        config.other_apis[api].api_key = keyInput.value;
+      }
+    }
+  }
+  await fetch('/api/config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(config)
+  });
+  alert('¡Configuración guardada!');
+  var modal = bootstrap.Modal.getInstance(document.getElementById('configModal'));
+  if (modal) modal.hide();
+}
+</script>

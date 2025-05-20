@@ -263,7 +263,8 @@ def procesar_fila(fila, ruta_archivo, nombres_columnas):
 origen = "4. Redactados.csv"  # Archivo correcto de entrada
 destino = "4. Redactados[IMGs].csv"  # Archivo de salida con mejor formato
 filas = leer_csv(origen)
-nombres_columnas = list(filas[0].keys()) + ["Portada"]
+""" //nombres_columnas = list(filas[0].keys()) + ["Portada"] """
+nombres_columnas = list(filas[0].keys()) + ["Portada", "Alt"]
 filas_existentes = obtener_filas_existentes(destino)
 filas_a_procesar = [fila for fila in filas if fila["Titulo"] not in filas_existentes]
 with ThreadPoolExecutor(max_workers=1) as executor:

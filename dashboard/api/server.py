@@ -230,69 +230,77 @@ def scraping():
 # Ruta para la sección de configuración
 @app.route('/configuracion')
 def configuracion():
-    return send_from_directory(app.template_folder, 'index.html')
+    return render_template('configuracion.html')
 
-# Ruta para obtener la configuración de IA
-@app.route('/api/config/ai', methods=['GET'])
-def get_ai_config():
+# ENDPOINT SEGURO PARA OBTENER LA CONFIGURACIÓN DE APIS
+@app.route('/api/config', methods=['GET'])
+def get_api_config():
     try:
         config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config/ai_config.json'))
         if os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-            # Por seguridad, no devolver API keys en la respuesta
-            safe_config = config.copy()
-            for provider, settings in safe_config['models'].items():
-                if 'api_key' in settings and settings['api_key']:
-                    settings['api_key'] = '********'
+            # Por seguridad, oculta las API keys reales
+            safe_config = json.loads(json.dumps(config))
+            # Oculta API keys en image_generators
+            if 'image_generators' in safe_config:
+                for gen, conf in safe_config['image_generators'].items():
+                    if isinstance(conf, dict) and 'api_key' in conf and conf['api_key']:
+                        safe_config['image_generators'][gen]['api_key'] = '********'
+            # Oculta API keys en other_apis
+            if 'other_apis' in safe_config:
+                for api, conf in safe_config['other_apis'].items():
+                    if isinstance(conf, dict) and 'api_key' in conf and conf['api_key']:
+                        safe_config['other_apis'][api]['api_key'] = '********'
             return jsonify(safe_config)
         else:
             return jsonify({"error": "Archivo de configuración no encontrado"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Ruta para actualizar la configuración de IA
-@app.route('/api/config/ai', methods=['POST'])
-def update_ai_config():
+# ENDPOINT SEGURO PARA ACTUALIZAR LA CONFIGURACIÓN DE APIS
+@app.route('/api/config', methods=['POST'])
+def update_api_config():
     try:
         config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config/ai_config.json'))
-        current_config = {}
+        if not os.path.exists(config_path):
+            return jsonify({"error": "Archivo de configuración no encontrado"}), 404
         
-        # Leer configuración actual si existe
-        if os.path.exists(config_path):
-            with open(config_path, 'r', encoding='utf-8') as f:
-                current_config = json.load(f)
+        # Leer configuración actual
+        with open(config_path, 'r', encoding='utf-8') as f:
+            current_config = json.load(f)
         
-        # Obtener datos enviados
+        # Obtener datos del request
         data = request.json
+        print("Datos recibidos para guardar:", data)
         
-        # Validar datos mínimos requeridos
-        if 'provider' not in data:
-            return jsonify({"error": "Falta el proveedor"}), 400
-            
-        # Si se envía un nuevo API key, actualizar, sino mantener el actual
-        if data['provider'] in current_config['models']:
-            provider_config = data.get('config', {})
-            
-            # Solo actualizar API key si se proporciona uno nuevo y no está vacío
-            if 'api_key' in provider_config and provider_config['api_key'] != '********' and provider_config['api_key'].strip():
-                current_config['models'][data['provider']]['api_key'] = provider_config['api_key']
-                
-            # Actualizar URL base si se proporciona
-            if 'base_url' in provider_config and provider_config['base_url'].strip():
-                current_config['models'][data['provider']]['base_url'] = provider_config['base_url']
-                
-            # Actualizar modelo si se proporciona
-            if 'model' in provider_config and provider_config['model'].strip():
-                current_config['models'][data['provider']]['model'] = provider_config['model']
+        # Validar estructura básica del nuevo formato
+        if not isinstance(data, dict):
+            return jsonify({"error": "Configuración inválida: no es un objeto JSON"}), 400
         
-        # Actualizar proveedor activo
-        current_config['provider'] = data['provider']
+        # Actualizar provider y models
+        if 'provider' in data:
+            current_config['provider'] = data['provider']
+        
+        if 'models' in data and isinstance(data['models'], dict):
+            # Si no existe, inicializar
+            if 'models' not in current_config:
+                current_config['models'] = {}
+            
+            # Actualizar cada modelo
+            for provider, model_data in data['models'].items():
+                current_config['models'][provider] = model_data
+        
+        # Actualizar configuraciones de imagen y video
+        if 'image_api_key' in data:
+            current_config['image_api_key'] = data['image_api_key']
+        
+        if 'video_api_key' in data:
+            current_config['video_api_key'] = data['video_api_key']
         
         # Guardar configuración actualizada
         with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(current_config, f, indent=2)
-            
+            json.dump(current_config, f, indent=2, ensure_ascii=False)
         return jsonify({"success": True, "message": "Configuración actualizada correctamente"})
     except Exception as e:
         import traceback
@@ -329,5 +337,149 @@ def upload_csv():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/ollama/models', methods=['GET'])
+def get_ollama_models():
+    try:
+        # Ejecuta 'ollama list' y parsea la salida de texto
+        result = subprocess.run(['ollama', 'list'], capture_output=True, text=True)
+        if result.returncode != 0:
+            return jsonify({'error': 'No se pudo obtener la lista de modelos de Ollama', 'details': result.stderr}), 500
+        lines = result.stdout.strip().splitlines()
+        modelos = []
+        for line in lines:
+            # Normalmente: nombre  tamaño  fecha
+            parts = line.split()
+            if len(parts) > 0 and not line.lower().startswith('modelo'):
+                modelos.append(parts[0])
+        return jsonify({'modelos': modelos})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/openai/models', methods=['POST'])
+def get_openai_models():
+    try:
+        data = request.json
+        api_key = data.get('api_key')
+        if not api_key:
+            return jsonify({'error': 'Se requiere API key'}), 400
+        
+        # Consultar la API de OpenAI para obtener modelos disponibles
+        import requests
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        }
+        response = requests.get('https://api.openai.com/v1/models', headers=headers)
+        
+        if response.status_code == 200:
+            models_data = response.json()
+            # Filtrar solo modelos de chat GPT
+            chat_models = [model['id'] for model in models_data['data'] 
+                          if 'gpt' in model['id'] and not model['id'].startswith('gpt-3.5-turbo-') 
+                          and not model['id'].startswith('gpt-4-') and not '-vision-' in model['id']]
+            return jsonify({'modelos': chat_models})
+        else:
+            return jsonify({'error': f'Error al consultar la API de OpenAI: {response.text}'}), response.status_code
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/deepseek/models', methods=['POST'])
+def get_deepseek_models():
+    try:
+        data = request.json
+        api_key = data.get('api_key')
+        if not api_key:
+            return jsonify({'error': 'Se requiere API key'}), 400
+        
+        # DeepSeek no tiene endpoint para listar modelos, devolvemos lista predefinida
+        # pero validamos la API key
+        import requests
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        }
+        # Hacemos una prueba de validación de API key con una petición mínima
+        # A un endpoint conocido
+        test_data = {
+            'model': 'deepseek-chat',
+            'messages': [{'role': 'user', 'content': 'test'}],
+            'max_tokens': 1
+        }
+        
+        # Esta petición solo es para validar la API key
+        response = requests.post('https://api.deepseek.com/v1/chat/completions', 
+                                json=test_data, headers=headers)
+        
+        if response.status_code in [200, 401, 429]:
+            # Si la API key es válida o hay error de cuota/límites, devolvemos los modelos
+            deepseek_models = ['deepseek-chat', 'deepseek-coder', 'deepseek-v2']
+            return jsonify({'modelos': deepseek_models})
+        else:
+            return jsonify({'error': f'API key de DeepSeek inválida: {response.text}'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/openrouter/models', methods=['POST'])
+def get_openrouter_models():
+    try:
+        data = request.json
+        api_key = data.get('api_key')
+        if not api_key:
+            return jsonify({'error': 'Se requiere API key'}), 400
+        
+        # Consultar la API de OpenRouter para obtener modelos disponibles
+        import requests
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'HTTP-Referer': 'https://automatizaweb.app'
+        }
+        response = requests.get('https://openrouter.ai/api/v1/models', headers=headers)
+        
+        if response.status_code == 200:
+            models_data = response.json()
+            # Obtener solo los IDs de modelos de chat
+            chat_models = [model['id'] for model in models_data['data'] 
+                          if model.get('context_length', 0) > 4000]
+            return jsonify({'modelos': chat_models})
+        else:
+            return jsonify({'error': f'Error al consultar la API de OpenRouter: {response.text}'}), response.status_code
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/grok/models', methods=['POST'])
+def get_grok_models():
+    try:
+        data = request.json
+        api_key = data.get('api_key')
+        if not api_key:
+            return jsonify({'error': 'Se requiere API key'}), 400
+        
+        # Consultar la API de X.AI (Grok) para obtener modelos disponibles
+        import requests
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        # X.AI no tiene endpoint de listado de modelos, así que probamos validar la API key
+        test_data = {
+            'model': 'grok-3-mini-fast-latest',
+            'messages': [{'role': 'user', 'content': 'test'}],
+            'max_tokens': 1
+        }
+        
+        # Solo para validar la API key
+        response = requests.post('https://api.x.ai/v1/chat/completions', 
+                                json=test_data, headers=headers)
+        
+        if response.status_code in [200, 429]:
+            # Si la API key es válida, devolvemos los modelos conocidos
+            grok_models = ['grok-3-mini-fast-latest', 'grok-3-mini-latest', 'grok-3-lean-latest', 'grok-1.5-turbo']
+            return jsonify({'modelos': grok_models})
+        else:
+            return jsonify({'error': f'API key de Grok inválida: {response.text}'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
