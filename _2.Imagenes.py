@@ -29,7 +29,7 @@ def crear_imagen(imagen, prompt):
         "aspect_ratios_selection": "1280*720",
         "performance_selection": "Speed",
         "image_number": 1,
-        "style_selections": ["Fooocus Enhance"]
+        "style_selections": ["Fooocus Enhance", "Fooocus V2", "Fooocus Sharp"]
     }
     
     with url_lock:
