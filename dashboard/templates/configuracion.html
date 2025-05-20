@@ -11,7 +11,7 @@
   <style>
     body { background: #f8f9fa; }
     .api-section-title { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; display: flex; align-items: center; }
-    .api-card { border-radius: 1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.07); transition: all 0.3s ease; }
+    .api-card { border-radius: 1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.07); transition: all 0.3s ease; background-color: #fff; }
     .api-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,123,255,0.15); }
     .api-card .card-header { background: linear-gradient(90deg, #007bff 0%, #00c6ff 100%); color: #fff; border-radius: 1rem 1rem 0 0; }
     .api-card .form-label { font-weight: 600; color: #0a66c2; }
@@ -27,6 +27,23 @@
     /* Animaciones suaves */
     .fade-in { animation: fadeIn 0.5s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* Estilos para el modo oscuro */
+    body.dark-mode { background: #212529; color: #f8f9fa; }
+    body.dark-mode .api-card { background-color: #343a40; color: #f8f9fa; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+    body.dark-mode .api-card:hover { box-shadow: 0 8px 25px rgba(0, 123, 255, 0.25); }
+    body.dark-mode .field-group { background-color: #343a40; color: #f8f9fa; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    body.dark-mode .form-label { color: #88c0ff; }
+    body.dark-mode .form-select, body.dark-mode .form-control { background-color: #2c3034; color: #f8f9fa; border-color: #495057; }
+    body.dark-mode .main-title { color: #88c0ff; }
+    body.dark-mode .divider { border-top-color: #495057; }
+    body.dark-mode .api-section-title { color: #88c0ff; }
+    body.dark-mode .form-text { color: #adb5bd; }
+    body.dark-mode p { color: #e9ecef; }
+    /* Ajustar color de small.text-muted para que coincida con elementos b en modo oscuro */
+    body.dark-mode small.text-muted { color: #88c0ff !important; }
+    /* Ajustar color de placeholders en modo oscuro */
+    body.dark-mode .form-control::placeholder { color: rgba(255, 255, 255, 0.75) !important; }
   </style>
 </head>
 <body>
@@ -53,6 +70,12 @@
         </ul>
       </div>
   </nav>
+
+  <!-- Botón para modo oscuro -->
+  <button id="dark-mode-toggle" class="dark-mode-toggle" title="Cambiar modo oscuro/claro">
+    <i id="dark-mode-icon" class="fas fa-moon"></i>
+  </button>
+
   <div class="container py-5">
     <div class="row justify-content-center">
       <div class="col-lg-10">
@@ -469,6 +492,45 @@ document.addEventListener('DOMContentLoaded', function() {
   refreshButton.title = 'Actualizar lista de modelos';
   refreshButton.onclick = actualizarUIProveedor;
   modelRow.querySelector('.col-md-4').appendChild(refreshButton);
+});
+</script>
+
+<!-- Script para el modo oscuro -->
+<script>
+// Función para cambiar entre modo claro y oscuro
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+  
+  // Cambiar el ícono del botón
+  const icon = document.getElementById('dark-mode-icon');
+  if (isDarkMode) {
+    icon.classList.remove('fa-moon');
+    icon.classList.add('fa-sun');
+  } else {
+    icon.classList.remove('fa-sun');
+    icon.classList.add('fa-moon');
+  }
+}
+
+// Aplicar modo oscuro si estaba activado previamente
+document.addEventListener('DOMContentLoaded', function() {
+  // Inicializar modo oscuro si estaba activado
+  if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+    const icon = document.getElementById('dark-mode-icon');
+    if (icon) {
+      icon.classList.remove('fa-moon');
+      icon.classList.add('fa-sun');
+    }
+  }
+  
+  // Configurar botón de modo oscuro
+  const darkModeButton = document.getElementById('dark-mode-toggle');
+  if (darkModeButton) {
+    darkModeButton.addEventListener('click', toggleDarkMode);
+  }
 });
 </script>
 </body>

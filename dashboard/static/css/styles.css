@@ -44,6 +44,31 @@ body.dark-mode .btn-close {
   filter: invert(1) grayscale(100%) brightness(200%);
 }
 
+/* Estilos para el flujo de procesamiento en modo oscuro */
+body.dark-mode .list-group-item {
+  background-color: #343a40;
+  border-color: #495057;
+  color: #f8f9fa;
+}
+
+body.dark-mode .list-group-item:hover {
+  background-color: #3e454d;
+}
+
+body.dark-mode .list-group-item .text-muted {
+  color: #adb5bd !important;
+}
+
+body.dark-mode .alert-info {
+  background-color: #193246;
+  border-color: #1a506e;
+  color: #88c0ff;
+}
+
+body.dark-mode h6.mb-1 {
+  color: #88c0ff;
+}
+
 .dark-mode-toggle {
   cursor: pointer;
   padding: 8px;

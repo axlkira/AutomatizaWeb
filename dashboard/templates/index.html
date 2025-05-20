@@ -500,15 +500,9 @@ async function guardarConfig() {
 </script>
 <!-- FIN MODAL PEGADO DIRECTAMENTE -->
 <script>
+// El enlace de configuración ahora usará su href normal para navegar directamente a /configuracion
 document.addEventListener('DOMContentLoaded', function() {
-  const navConfig = document.getElementById('nav-config');
-  if (navConfig) {
-    navConfig.addEventListener('click', function(e) {
-      e.preventDefault();
-      var m = new bootstrap.Modal(document.getElementById('configModal'));
-      m.show();
-    });
-  }
+  // Inicialización de otros componentes si es necesario
 });
 </script>
 </body>

@@ -31659,3 +31659,13 @@
 2025-05-19 22:12:56,016 - INFO - Proceso completado en 0.51 segundos
 2025-05-19 22:12:56,016 - INFO - Se han eliminado 0 entradas (0.00%)
 2025-05-19 22:12:56,016 - INFO - El archivo ha sido descanivalizado exitosamente
+2025-05-20 14:06:33,698 - INFO - Iniciando descanivalización del archivo: C:\Users\GAMER\Desktop\automatizaWeb\AutomatizaWeb\0. Fusionados.csv
+2025-05-20 14:06:33,699 - INFO - Se encontraron 3 entradas y 3 keywords únicas
+2025-05-20 14:06:33,699 - INFO - No se encontraron canivalizaciones.
+2025-05-20 14:06:33,703 - INFO - Backup creado: 0. Fusionados.backup.csv
+2025-05-20 14:06:33,703 - INFO - Keyword: 'alura latam' - Se mantiene posición 1 - URL: http://aluracursos.com/
+2025-05-20 14:06:33,703 - INFO - Keyword: 'pascalcase' - Se mantiene posición 1 - URL: http://aluracursos.com/blog/convenciones-de-nomenclatura-camel-pascal-kebab-snake-case
+2025-05-20 14:06:33,703 - INFO - Keyword: 'pascal case' - Se mantiene posición 1 - URL: http://aluracursos.com/blog/convenciones-de-nomenclatura-camel-pascal-kebab-snake-case
+2025-05-20 14:06:34,217 - INFO - Proceso completado en 0.52 segundos
+2025-05-20 14:06:34,218 - INFO - Se han eliminado 0 entradas (0.00%)
+2025-05-20 14:06:34,218 - INFO - El archivo ha sido descanivalizado exitosamente
