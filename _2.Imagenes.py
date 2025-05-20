@@ -26,7 +26,7 @@ def crear_imagen(imagen, prompt):
     data = {
         "prompt": prompt,
         "negative_prompt": "worst quality, low quality, normal quality, lowres, low details, oversaturated, undersaturated, overexposed, underexposed, grayscale, bw, bad photo, bad photography, bad art, watermark, signature, text font, username, error, logo, words, letters, digits, autograph, trademark, name, blur, blurry, censored, jpeg artifacts, ugly, repetition, poorly drawn, mutilated, poorly lit, bad shadow, draft, cropped, out of frame, cut off, censored, jpeg artifacts, out of focus, glitch, duplicate, airbrushed, cartoon, anime, semi-realistic, cgi, render, blender, digital art, manga, amateur, 3D, 3D Game Scene, 3D Character, bad hands, bad anatomy, bad face, bad body, bad feet, bad teeth, bad arms, bad legs, deformities, nudity, naked, nude, penis, dick, cock, vagina, pussy, vulva, breasts, boobs, tits, bare chest, exposed genitals, topless, bottomless",
-        "aspect_ratios_selection": "896*896",
+        "aspect_ratios_selection": "1280*720",
         "performance_selection": "Speed",
         "image_number": 1,
         "style_selections": ["Fooocus Enhance"]
