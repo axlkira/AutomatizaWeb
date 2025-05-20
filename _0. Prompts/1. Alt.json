@@ -1,0 +1,10 @@
+[
+  {
+    "role": "system",
+    "content": "Responde en español utilizando una sola frase muy breve y concisa, asegurándote de captar la idea principal sin añadir detalles innecesarios."
+  },
+  {
+    "role": "user",
+    "content": "Simplifica lo siguiente en una sola frase muy corta y clara en español: \"{{prompt}}\".\nLa frase debe tener máximo siete palabras."
+  }
+]
