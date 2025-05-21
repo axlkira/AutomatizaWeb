@@ -297,6 +297,13 @@ def update_api_config():
         
         if 'video_api_key' in data:
             current_config['video_api_key'] = data['video_api_key']
+            
+        # Actualizar proveedor de imagen y modelo si está presente
+        if 'image_provider' in data:
+            current_config['image_provider'] = data['image_provider']
+            
+        if 'image_model' in data:
+            current_config['image_model'] = data['image_model']
         
         # Guardar configuración actualizada
         with open(config_path, 'w', encoding='utf-8') as f:
@@ -479,6 +486,69 @@ def get_grok_models():
         else:
             return jsonify({'error': f'API key de Grok inválida: {response.text}'}), 401
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Endpoint para obtener modelos disponibles de DeepInfra
+@app.route('/api/deepinfra/models', methods=['POST'])
+def get_deepinfra_models():
+    try:
+        # Obtener la API key del request
+        data = request.json
+        api_key = data.get('api_key', '')
+        
+        if not api_key:
+            return jsonify({'error': 'API key requerida para consultar modelos de DeepInfra'}), 400
+        
+        # Intentar validar la API key de DeepInfra
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        # En este caso podemos intentar obtener los modelos disponibles de DeepInfra
+        # consultando su API, pero como alternativa simple vamos a devolver una lista predefinida
+        # Podríamos usar: https://api.deepinfra.com/v1/models
+        
+        modelos = [
+            'stabilityai/sd3.5-medium',
+            'stabilityai/sd3.5-large',
+            'stable-diffusion-xl-turbo',
+            'stable-diffusion-xl-base-1.0',
+            'segmind/midjourney-v5',
+            'segmind/midjourney-v6',
+            'playground/v2.5',
+            '01-ai/yi-image-2.0-1b',
+            'anthropic/claude-3.5-sonnet',
+            'jina/midjourney-4',
+            'laion/erlich',
+            'segmind/ssd-1b-anime'
+        ]
+        
+        # Podríamos validar la API key haciendo una solicitud simple
+        try:
+            test_url = 'https://api.deepinfra.com/v1/openai/images/generations'
+            test_payload = {
+                'prompt': 'test',
+                'model': 'stabilityai/sd3.5-medium',
+                'n': 1,
+                'size': '256x256'
+            }
+            response = requests.post(test_url, headers=headers, json=test_payload, timeout=5)
+            
+            # Si hay un error de autenticación, DeepInfra devolverá un 401
+            if response.status_code == 401:
+                return jsonify({'error': 'API key inválida para DeepInfra'}), 401
+                
+        except Exception as e:
+            print(f"Error al validar API key de DeepInfra: {str(e)}")
+            # Continuamos de todas formas y devolvemos los modelos predefinidos
+        
+        return jsonify({'modelos': modelos})
+        
+    except Exception as e:
+        import traceback
+        error_detallado = traceback.format_exc()
+        print(f"Error al obtener modelos de DeepInfra: {error_detallado}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

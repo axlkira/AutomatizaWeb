@@ -109,11 +109,31 @@ def _generic_api_call(api_type, config, prompt, extract_content):
         "Authorization": f"Bearer {api_key}"
     }
     
+    # Headers específicos para OpenRouter
+    if api_type == 'openrouter':
+        # OpenRouter requiere estos headers adicionales
+        headers.update({
+            "HTTP-Referer": "https://automatizaweb.local",  # Requerido por OpenRouter
+            "X-Title": "AutomatizaWeb"  # Título de tu aplicación
+        })
+    
     # La mayoría de las APIs usan este formato de payload
     payload = {
         "model": model,
         "messages": prompt
     }
+    
+    # Configuración específica para OpenRouter
+    if api_type == 'openrouter':
+        # Asegurar que el modelo tiene el formato correcto para OpenRouter
+        if not model.startswith('anthropic/') and not model.startswith('google/') and \
+           not model.startswith('meta/') and not model.startswith('mistralai/') and not model.startswith('openai/'):
+            # Si no tiene un prefijo de proveedor, intentar usar qwen como está en la configuración
+            print(f"Usando modelo específico de OpenRouter: {model}")
+        
+        # Agregar transformers adicionales para OpenRouter
+        payload["transforms"] = ["middle-out"]
+        payload["route"] = "fallback"  # Usar fallback si la primera opción no está disponible
     
     # Añadir parámetros adicionales si están en la configuración
     if 'temperature' in config:
@@ -124,9 +144,39 @@ def _generic_api_call(api_type, config, prompt, extract_content):
     url = f"{base_url}/chat/completions"
     print(f"Enviando solicitud a {api_type.capitalize()}: {url}")
     
-    response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
-    result = response.json()
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        
+        # Imprimir información detallada en caso de error
+        if response.status_code != 200:
+            print(f"ERROR {response.status_code}: {response.text}")
+            
+            # Manejo específico para errores de API key
+            if response.status_code == 401:
+                print("\n*** ERROR DE AUTENTICACIÓN ***")
+                print("La API key no es válida o ha caducado.")
+                print(f"Revisar la API key de {api_type} en config/ai_config.json")
+                
+                if api_type == 'openrouter':
+                    # Intentar cambiar a un modelo alternativo si falla
+                    alt_model = "google/gemini-pro"
+                    print(f"\nIntentando con modelo alternativo: {alt_model}")
+                    payload["model"] = alt_model
+                    response = requests.post(url, json=payload, headers=headers)
+            
+        response.raise_for_status()
+        result = response.json()
+    except Exception as e:
+        print(f"Error al realizar petición: {e}")
+        
+        # Si estamos usando OpenRouter pero falla, intentar con Ollama local como plan B
+        if api_type == 'openrouter':
+            print("\n*** Intentando con Ollama local como alternativa ***")
+            return _generic_api_call('ollama', 
+                                    {"base_url": "http://localhost:11434/v1", "model": "qwen3:8b"}, 
+                                    prompt, 
+                                    extract_content)
+        raise
     
     # Manejar diferentes formatos de respuesta
     try:

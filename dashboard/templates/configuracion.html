@@ -126,30 +126,42 @@
   <div class="api-section-title"><i class="fas fa-image api-icon text-success"></i>API de Imagen</div>
   <div class="mb-3 row align-items-center">
     <div class="col-md-4">
-      <label for="select-image-provider" class="form-label mb-0"><b>Proveedor activo de imagen:</b></label>
+      <label class="form-label mb-0"><b>Proveedor activo de imagen:</b></label>
     </div>
     <div class="col-md-8">
-      <select id="select-image-provider" class="form-select provider-select">
-        <option value="fooocus">Fooocus (Local)</option>
-        <option value="deepinfra">DeepInfra</option>
-        <option value="stability">Stability AI</option>
-        <option value="other">Otro...</option>
-      </select>
-    </div>
-  </div>
-  <div class="mb-3 row align-items-center" id="image-api-key-row">
-    <div class="col-md-4">
-      <label for="image-api-key" class="form-label mb-0">API Key:</label>
-    </div>
-    <div class="col-md-8">
-      <div class="input-group">
-        <input type="password" class="form-control" id="image-api-key" placeholder="Introduce tu API Key" autocomplete="off">
-        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('image-api-key')"><i class="fas fa-eye"></i></button>
-      </div>
-      <small class="text-muted">No se requiere para proveedores locales como Fooocus.</small>
+      <input type="text" class="form-control bg-light" value="Fooocus (Local)" readonly>
+      <small class="text-muted">Proveedor local para generación de imágenes.</small>
     </div>
   </div>
 </div>
+
+<!-- Tarjeta específica para DeepInfra -->
+<div class="field-group fade-in">
+  <div class="api-section-title"><i class="fas fa-brain api-icon text-info"></i>API DeepInfra</div>
+  <div class="mb-3 row align-items-center">
+    <div class="col-md-4">
+      <label for="deepinfra-model" class="form-label mb-0"><b>Modelo DeepInfra:</b></label>
+    </div>
+    <div class="col-md-8">
+      <input type="text" class="form-control" id="deepinfra-model" placeholder="Ej: stabilityai/sd3.5-medium" autocomplete="off">
+      <small class="text-muted">Escribe el nombre completo del modelo que deseas utilizar.</small>
+    </div>
+  </div>
+  <div class="mb-3 row align-items-center">
+    <div class="col-md-4">
+      <label for="deepinfra-api-key" class="form-label mb-0"><b>API Key DeepInfra:</b></label>
+    </div>
+    <div class="col-md-8">
+      <div class="input-group">
+        <input type="password" class="form-control" id="deepinfra-api-key" placeholder="Introduce tu API Key de DeepInfra" autocomplete="off">
+        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('deepinfra-api-key')"><i class="fas fa-eye"></i></button>
+      </div>
+      <small class="text-muted">Se requiere una API key válida para utilizar DeepInfra.</small>
+    </div>
+  </div>
+</div>
+
+<!-- La sección de DeepInfra ahora está implementada como una tarjeta independiente -->
 <div class="divider"></div>
 <!-- Sección de APIs de Video -->
 <div class="field-group fade-in">
@@ -200,6 +212,8 @@ const MODELOS_PREDEFINIDOS = {
   'custom': ['custom-model-1', 'custom-model-2']
 };
 
+// Ya no necesitamos la lista predefinida de modelos porque ahora el usuario los escribe manualmente
+
 // Datos de los proveedores
 const PROVEEDORES = {
   'ollama': {
@@ -236,14 +250,15 @@ async function cargarConfig() {
     const res = await fetch('/api/config');
     configData = await res.json();
     
-    // Establece el proveedor seleccionado
+    // Establece el proveedor seleccionado para texto
     const proveedorSelect = document.getElementById('select-text-provider');
     if (configData.provider) {
       proveedorSelect.value = configData.provider;
     }
     
-    // Carga los valores iniciales para imagen y video
-    document.getElementById('image-api-key').value = configData.image_api_key || '';
+    // Carga los valores iniciales para DeepInfra y Video
+    document.getElementById('deepinfra-api-key').value = configData.image_api_key || '';
+    document.getElementById('deepinfra-model').value = configData.image_model || 'stabilityai/sd3.5-medium';
     document.getElementById('video-api-key').value = configData.video_api_key || '';
     
     // Actualiza la UI basada en los valores cargados
@@ -371,11 +386,13 @@ async function actualizarUIProveedor() {
   }
 }
 
+// Ya no necesitamos la función cargarModelosDeepInfra porque ahora el modelo se introduce manualmente
+
 /**
  * Guarda la configuración en el backend
  */
 async function guardarConfig() {
-  // Recopilar datos actuales
+  // Recopilar datos actuales para el proveedor de texto
   const proveedor = document.getElementById('select-text-provider').value;
   const modelo = document.getElementById('select-text-model').value;
   const apiKey = document.getElementById('text-api-key').value;
@@ -391,15 +408,19 @@ async function guardarConfig() {
     nuevaConfig.models = {...configData.models};
   }
   
-  // Actualizar configuración del proveedor seleccionado
+  // Actualizar configuración del proveedor de texto seleccionado
   nuevaConfig.models[proveedor] = {
     model: modelo,
     api_key: apiKey,
     base_url: PROVEEDORES[proveedor]?.base_url || ''
   };
   
-  // Agregar configuraciones para imagen y video
-  nuevaConfig.image_api_key = document.getElementById('image-api-key').value || '';
+  // Configuración para DeepInfra
+  nuevaConfig.image_provider = 'deepinfra'; // Siempre DeepInfra para esta sección
+  nuevaConfig.image_api_key = document.getElementById('deepinfra-api-key').value || '';
+  nuevaConfig.image_model = document.getElementById('deepinfra-model').value || 'stabilityai/sd3.5-medium';
+  
+  // Configuración para Video
   nuevaConfig.video_api_key = document.getElementById('video-api-key').value || '';
   
   try {
@@ -465,23 +486,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // Manejar visibilidad del campo API Key para Fooocus (imagen)
+  // Manejar visibilidad del campo API Key para Fooocus (imagen) y mostrar/ocultar sección DeepInfra
   document.getElementById('select-image-provider').addEventListener('change', function() {
     const apiKeyRow = document.getElementById('image-api-key-row');
+    const deepinfraSection = document.getElementById('deepinfra-section');
+    
+    // Manejar visibilidad del campo API Key
     if (this.value === 'fooocus') {
       apiKeyRow.style.opacity = '0.5';
       document.getElementById('image-api-key').disabled = true;
+      deepinfraSection.style.display = 'none'; // Ocultar sección DeepInfra
     } else {
       apiKeyRow.style.opacity = '1';
       document.getElementById('image-api-key').disabled = false;
+      
+      // Mostrar sección DeepInfra solo si es el proveedor seleccionado
+      if (this.value === 'deepinfra') {
+        deepinfraSection.style.display = 'block';
+        // Cargar modelos predefinidos inicialmente
+        cargarModelosDeepInfra();
+      } else {
+        deepinfraSection.style.display = 'none';
+      }
     }
   });
   
-  // Configurar el estado inicial de Fooocus
-  if (document.getElementById('select-image-provider').value === 'fooocus') {
-    document.getElementById('image-api-key-row').style.opacity = '0.5';
-    document.getElementById('image-api-key').disabled = true;
-  }
+    // No se necesita ninguna configuración especial para la sección de Fooocus porque ahora es estática
   
   // Añadir botón para refrescar modelos directamente
   const modelRow = document.getElementById('text-model-row');

@@ -15,10 +15,20 @@ os.makedirs(IMGS, exist_ok=True)
 
 # --- Configuración dinámica de APIs ---
 def cargar_configuracion_apis():
-    # Siempre usar configuración por defecto para Fooocus
-    # Esto garantiza que _2.Imagenes.py siempre use Fooocus independientemente
-    # de lo que haya en el archivo de configuración
-    return ["http://localhost:8888/v1/generation/text-to-image"], "fooocus"
+    config_path = os.path.join("config", "ai_config.json")
+    if not os.path.exists(config_path):
+        # Config por defecto (Fooocus)
+        return ["http://localhost:8888/v1/generation/text-to-image"], "fooocus"
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    # Buscar generador activo
+    image_generators = config.get("image_generators", {})
+    active = config.get("active_image_generator") or image_generators.get("default", "fooocus")
+    generator_conf = image_generators.get(active, {})
+    base_urls = generator_conf.get("base_urls")
+    if not base_urls:
+        base_urls = ["http://localhost:8888/v1/generation/text-to-image"]
+    return base_urls, active
 
 fooocus_base_urls, generador_activo = cargar_configuracion_apis()
 url_cycle = itertools.cycle(fooocus_base_urls)
